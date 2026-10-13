@@ -1,0 +1,7 @@
+-- Replace placeholders using values from your test project, then run manually.
+-- No credentials or patient data belong in this file.
+-- insert into public.kaash_units(name) values('ICU KAASH') returning id;
+-- insert into public.kaash_boards(unit_id) values('<UNIT_UUID>');
+-- insert into public.kaash_members(user_id,unit_id,role) values('<AUTH_USER_UUID>','<UNIT_UUID>','admin');
+-- Dedicated bridge login: role print_agent, bridge_id matching the configured printer.
+-- Register printer IPs, exact roll dimensions and 203 dpi before setting enabled=true.
