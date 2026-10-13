@@ -25,7 +25,7 @@ This is an implementation package for a test deployment. Accounts, SQL, cloud se
 Import this folder as the project root. Framework: Other. Output directory: public. No build command is needed. Keep the root api directory.
 The supplied project URL and publishable key are built into api/config.js as public client configuration. Set ICU_UNIT_ID from 003_initialize_unit.sql in Vercel. Optional automation variables: N8N_WEBHOOK_URL and N8N_WEBHOOK_SECRET.
 No secret/service_role key is required by the web app. The /api/config endpoint returns only the publishable key, URL and unit ID. The login page shows a setup message until configured. /demo.html is the separate fictional local-storage demo.
-Use /index.html for the connected pilot. Supabase RLS enforces permissions independently of the interface. Sessions are memory-only; page reload requires sign-in again. No MFA flow is implemented yet. Changes are not automatically refreshed from other users; use Reload latest board. A revision conflict blocks further writes and preserves the unsaved in-memory draft for explicit export. Exports may contain patient data: use hospital-approved handling.
+Use /index.html for the connected pilot. Supabase RLS enforces permissions independently of the interface. Sessions persist in sessionStorage for one hour from sign-in in the same tab. Patient data and unsaved drafts remain in memory. See UPDATE_AR.md for upgrade instructions. No MFA flow is implemented yet. Changes are not automatically refreshed from other users; use Reload latest board. A revision conflict blocks further writes and preserves the unsaved in-memory draft for explicit export. Exports may contain patient data: use hospital-approved handling.
 
 ## 3. Hospital print bridge
 Python 3.10+ is required. Install dependencies using `python -m pip install -r print-bridge/requirements.txt`.
@@ -43,3 +43,4 @@ POST /api/automation with a valid user Bearer token and {"event":"shift_summary_
 Run `npm test` and `python -m unittest discover -s tests -p 'test_*.py'`.
 The package includes mocked API permission tests and EPL raster tests. These do not verify live SQL deployment/RLS, browser flows, hospital networking, n8n import compatibility or physical printers. Those checks require the actual services/devices.
 Before clinical use: normalize the board into admission/observation/order/administration tables, implement authenticated handover signatures and MFA, test RLS with each real role, validate concurrent edits and backup restoration, and verify data-hosting approval and print layout using fictional cases. The current patient handover name field remains a manual entry, not an authenticated electronic signature.
+
