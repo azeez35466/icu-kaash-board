@@ -1,3 +1,4 @@
+let saveTimer18;
 let config,session,member,boardRevision=0,serverFingerprint='',pending=false,saveBlocked=false;
 const gate=document.createElement('div');gate.className='production-gate';gate.innerHTML='<div class="production-login"><img class="cluster-logo" src="/taif-logo.jpg" alt="Taif Health Cluster"><h1>ICU KAASH</h1><p>Secure pilot · Patient & Census Management</p><div id="login-content">Loading configuration…</div></div>';document.body.append(gate);
 const cloudStatus=document.createElement('div');cloudStatus.className='demo-banner';cloudStatus.setAttribute('role','status');
@@ -10,8 +11,14 @@ function captureBoard(){return clone({patients:patients.filter(p=>p.name&&p.mrn)
 function installBoard(data){patients.splice(0,patients.length,...(data.patients||[]));patients.forEach(ensureAdmission8);archivedRecords3=data.archivedRecords||[];const empty=()=>({Day:{},Evening:{},Night:{}});shiftRNs=data.shiftRNs||empty();shiftPCTs=data.shiftPCTs||empty();shiftAcuity=data.shiftAcuity||empty();shiftSide=data.shiftSide||empty();shiftAttendance=data.shiftAttendance||empty();shiftDuties3=data.shiftDuties3||empty();scheduleByDate4=data.scheduleByDate4||{};if(data.scheduleDate)scheduleDate3=data.scheduleDate;linen=data.linen||{date:scheduleDate3,Day:{gowns:0,blankets:0,sheets:0},Evening:{gowns:0,blankets:0,sheets:0},Night:{gowns:0,blankets:0,sheets:0}};linenByDate3=data.linenByDate||{};kardexDrafts=data.kardexDrafts||{};if(data.counts)counts=data.counts;note=data.note||''}
 function status(message){cloudStatus.textContent=message}
 const canEdit=()=>['admin','doctor','charge_nurse'].includes(member?.role);
-async function sync(){if(pending||saveBlocked)return;if(!canEdit()){status('Read-only role. Changes have not been saved.');return}pending=true;try{let next=captureBoard(),fingerprint=JSON.stringify(next);while(fingerprint!==serverFingerprint){status('Saving to Supabase…');const result=await rest('kaash_boards?unit_id=eq.'+encodeURIComponent(config.unitId)+'&revision=eq.'+boardRevision,{method:'PATCH',headers:{Prefer:'return=representation'},body:JSON.stringify({data:next,revision:boardRevision+1})});if(!result.length){saveBlocked=true;throw Error('Another user updated the board. Your changes are unsaved. Export your draft, then reload to review the current board.')}boardRevision=result[0].revision;serverFingerprint=fingerprint;next=captureBoard();fingerprint=JSON.stringify(next)}status('Saved to Supabase · '+new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Riyadh',dateStyle:'medium',timeStyle:'short'}).format(new Date())+' · revision '+boardRevision)}catch(e){saveBlocked=true;status(e.message+' Keep this page open.');document.body.classList.add('save-blocked')}finally{pending=false}}
-function queueSave(){if(!session){status('Sign in required.');return}if(!canEdit()){status('Read-only access.');return}void sync()}
+async function sync(){if(pending||saveBlocked)return;if(!canEdit()){status('Read-only role. Changes have not been saved.');return}pending=true;try{let next=captureBoard(),fingerprint=JSON.stringify(next);while(fingerprint!==serverFingerprint){status('Saving to Supabase…');const result=await rest('kaash_boards?unit_id=eq.'+encodeURIComponent(config.unitId)+'&revision=eq.'+boardRevision,{method:'PATCH',headers:{Prefer:'return=representation'},body:JSON.stringify({data:next,revision:boardRevision+1})});if(!result.length){saveBlocked=true;throw Error('Another user updated the board. Your changes are unsaved. Export your draft, then reload to review the current board.')}boardRevision=result[0].revision;
+if(Array.isArray(result[0].data?.archivedRecords)&&result[0].data.archivedRecords.length===0){
+ const savedArchives=new Set(next.archivedRecords.map(record=>JSON.stringify(record)));
+ archivedRecords3=archivedRecords3.filter(record=>!savedArchives.has(JSON.stringify(record)));
+ next.archivedRecords=[];fingerprint=JSON.stringify(next);
+}
+serverFingerprint=fingerprint;next=captureBoard();fingerprint=JSON.stringify(next)}status('Saved to Supabase · '+new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Riyadh',dateStyle:'medium',timeStyle:'short'}).format(new Date())+' · revision '+boardRevision)}catch(e){saveBlocked=true;status(e.message+' Keep this page open.');document.body.classList.add('save-blocked')}finally{pending=false}}
+function queueSave(){if(!session){status('Sign in required.');return}if(!canEdit()){status('Read-only access.');return}clearTimeout(saveTimer18);status('Changes pending…');saveTimer18=setTimeout(()=>void sync(),200)}
 function installCloudPersistence(){savePreview3=queueSave;persist8=()=>{if(!canEdit()||saveBlocked)return false;queueSave();return true};kPersist=()=>{if(!canEdit()||saveBlocked)return false;queueSave();return true};}
 function loginForm(message=''){document.getElementById('login-content').innerHTML=`<p role="status">${safe(message)}</p><form id="login-form"><label>Email<input type="email" name="email" autocomplete="username" required></label><label>Password<input type="password" name="password" autocomplete="current-password" required></label><button type="submit">Sign in</button></form><p>Accounts and unit membership are created by your administrator.</p><a href="/demo.html">Open fictional demo</a>`;document.getElementById('login-form').onsubmit=async e=>{e.preventDefault();const form=e.target,button=form.querySelector('button');button.disabled=true;try{session=await authRequest('token?grant_type=password',{email:form.email.value,password:form.password.value});session.expires_at=Math.floor(Date.now()/1000)+session.expires_in;form.password.value='';const memberships=await rest('kaash_members?unit_id=eq.'+encodeURIComponent(config.unitId)+'&select=role');if(!memberships.length||memberships[0].role==='print_agent')throw Error('No application membership for this unit.');member=memberships[0];const rows=await rest('kaash_boards?unit_id=eq.'+encodeURIComponent(config.unitId)+'&select=data,revision');if(!rows.length)throw Error('Unit board is not initialized.');installBoard(rows[0].data);boardRevision=rows[0].revision;serverFingerprint=JSON.stringify(captureBoard());installCloudPersistence();document.querySelector('.top').after(cloudStatus);status('Connected · '+member.role+' · revision '+boardRevision);gate.remove();document.body.classList.remove('auth-locked');page='census';render();installToolbar();if(!canEdit()){document.body.classList.add('read-only');status('Read-only · '+member.role+' · revision '+boardRevision)} }catch(e){session=null;loginForm(e.message)}}}
 function installToolbar(){const bar=document.createElement('div');bar.className='production-toolbar';bar.innerHTML='<button id="cloud-reload">Reload latest board</button><button id="export-draft">Export unsaved draft</button><button id="sign-out">Sign out</button>';document.querySelector('.top').after(bar);document.getElementById('cloud-reload').onclick=()=>{if(pending||saveBlocked||JSON.stringify(captureBoard())!==serverFingerprint){if(!confirm('Reloading discards unsaved changes. Export the draft first if needed. Reload now?'))return}location.reload()};document.getElementById('export-draft').onclick=()=>{const blob=new Blob([JSON.stringify(captureBoard(),null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='ICU_KAASH_unsaved_draft.json';a.click();URL.revokeObjectURL(url)};document.getElementById('sign-out').onclick=async()=>{if(pending||saveBlocked||JSON.stringify(captureBoard())!==serverFingerprint){if(!confirm('Sign out with unsaved changes? Export your draft first if needed.'))return}try{await fetch(config.url+'/auth/v1/logout',{method:'POST',headers:authHeaders()})}finally{session=null;location.reload()}}}
@@ -23,3 +30,38 @@ const labelsBeforeCloud=labels5;labels5=function(){labelsBeforeCloud();main.clas
 try{const response=await fetch('/api/config');const data=await response.json();if(!response.ok)throw Error(data.error);config=data;loginForm()}catch(e){document.getElementById('login-content').textContent=e.message+' The fictional demo is available at /demo.html.'}
 
 const cloudRenderBefore=render;render=function(){main.classList.toggle("cloud-labels",page==="labels");cloudRenderBefore()};
+
+// Archives are fetched on demand. Only 50 records are rendered at a time.
+let recordsRequest18=0;
+medicalRecords3=function(){
+ const request=++recordsRequest18;
+ main.innerHTML='<h2 class="title">Medical records</h2><p class="sub">Database archive · 50 records per page</p><input class="search" id="record-search3" placeholder="Search name, MRN, bed or diagnosis"><div id="record-status18" role="status"></div><div id="records-list3"></div><button class="btn secondary" id="records-prev18" disabled>Previous</button> <button class="btn secondary" id="records-next18" disabled>Next</button>';
+ let cursor=null,history=[],rows=[],nextCursor=null,timer,version=0;
+ const load=async()=>{
+  const current=++version;
+  const query=document.getElementById('record-search3').value.trim();
+  const statusEl=document.getElementById('record-status18');statusEl.textContent='Loading records…';
+  const params=new URLSearchParams({unit_id:'eq.'+config.unitId,select:'data,archived_at,admission_key',order:'archived_at.desc,admission_key.desc',limit:'51'});
+  const conditions=[];
+  if(query)params.set('search_document','wfts(simple).'+query);
+  if(cursor)conditions.push('or(archived_at.lt.'+cursor.at+',and(archived_at.eq.'+cursor.at+',admission_key.lt."'+cursor.key.replace(/["\\]/g,'')+'"))');
+  if(conditions.length)params.set('and','('+conditions.join(',')+')');
+  try{
+   const result=await rest('kaash_records?'+params);
+   if(request!==recordsRequest18||current!==version||page!=='records')return;
+   rows=result.slice(0,50);const last=rows.at(-1);nextCursor=result.length>50?{at:last.archived_at,key:last.admission_key}:null;
+   document.getElementById('records-list3').innerHTML=rows.map(({data:p},i)=>`<article class="card"><div class="label">${safe(p.bed)} · ${safe(p.status||'Discharged')}</div><h3>${safe(p.name)}</h3><p class="meta">MRN ${safe(p.mrn)} · Admitted ${safe(p.doa||'—')} · Discharged ${safe(p.dischargedAt||'—')}</p><p>${safe(p.diagnosis||'')}</p><button class="btn secondary" data-record18="${i}">Open record</button></article>`).join('')||'<p>No matching records.</p>';
+   document.querySelectorAll('[data-record18]').forEach(button=>button.onclick=()=>{
+    open(clone(rows[+button.dataset.record18].data));
+    const fields=document.getElementById('patient-fields');if(fields){fields.querySelectorAll('input,select,textarea,button').forEach(el=>el.disabled=true);fields.insertAdjacentHTML('afterbegin','<p class="sub">Archived record · read only</p>');}
+   });
+   statusEl.textContent='Page '+(history.length+1)+' · '+rows.length+' records';
+   document.getElementById('records-prev18').disabled=!history.length;
+   document.getElementById('records-next18').disabled=!nextCursor;
+  }catch(error){if(current===version&&request===recordsRequest18&&page==='records')statusEl.textContent=error.message+' Ensure the archive database update has been installed.';}
+ };
+ document.getElementById('record-search3').oninput=()=>{clearTimeout(timer);++version;cursor=null;history=[];timer=setTimeout(load,300)};
+ document.getElementById('records-next18').onclick=()=>{if(!nextCursor)return;history.push(cursor);cursor=nextCursor;void load()};
+ document.getElementById('records-prev18').onclick=()=>{if(!history.length)return;cursor=history.pop();void load()};
+ void load();
+};
