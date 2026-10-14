@@ -110,7 +110,7 @@ async function refreshSession(){
 }
 async function rest(path,options={}){
  await refreshSession();
- const response=await fetch(config.url+'/rest/v1/'+path,{...options,headers:{...authHeaders(),...(options.headers||{})},signal:options.signal||AbortSignal.timeout(20000)});
+ const response=await fetch(config.url+'/rest/v1/'+path,{...options,cache:'no-store',headers:{...authHeaders(),...(options.headers||{})},signal:options.signal||AbortSignal.timeout(20000)});
  const data=response.status===204?null:await readJSON20(response,'Database');
  if(!response.ok){
   if(response.status===401){expireSession20('Session could not be validated. Sign in again.');throw Error('Sign in again. Unsaved changes have not been discarded.');}
@@ -165,6 +165,22 @@ function installStaffPanel20(){
  const section=document.createElement('section');section.className='section';section.dataset.staffPanel24='true';
  section.innerHTML=`<div class="secthead"><h3>Staff directory</h3><small>${staff.length} RN · ${pctNames.length} PCT</small></div>${canEdit()?'<details><summary class="btn secondary">Add staff</summary><form id="add-staff20" class="fields" style="margin-top:10px"><div class="field"><label>Staff name<input id="staff-name20" maxlength="80" required autocomplete="off"></label></div><div class="field"><label>Role<select id="staff-role20"><option value="rn">RN</option><option value="pct">PCT</option></select></label></div><button class="btn" type="submit">Add</button><p id="staff-message20" role="status"></p></form></details>':'<p class="sub">Staff directory managed by the charge nurse.</p>'}`;
  main.querySelector('.schedule-controls3')?.before(section);
+ const reload=document.createElement('button');reload.type='button';reload.className='btn secondary';reload.id='reload-staff25';reload.textContent='Load nursing directory';section.append(reload);
+ const message=document.createElement('p');message.id='directory-status25';message.setAttribute('role','status');message.className='sub';message.textContent='Board revision '+boardRevision;section.append(message);
+ reload.onclick=async()=>{
+  if(pending||saveBlocked||dirty20()){message.textContent='Save or export your pending changes before loading the directory.';return;}
+  reload.disabled=true;message.textContent='Loading directory from Supabase…';
+  try{
+   const rows=await rest('kaash_boards?unit_id=eq.'+encodeURIComponent(config.unitId)+'&select=data,revision');
+   const row=Array.isArray(rows)?rows[0]:null;
+   if(!row?.data||!Array.isArray(row.data.staffDirectory?.rn))throw Error('No nursing directory returned for unit '+config.unitId+'. Check the import destination.');
+   if(pending||saveBlocked||dirty20())throw Error('New changes are pending. Save them before loading the directory.');
+   installBoard(row.data);boardRevision=row.revision;serverFingerprint=JSON.stringify(captureBoard());render();
+   const text='Loaded '+staff.length+' RN from database · revision '+boardRevision;
+   document.getElementById('directory-status25').textContent=text;status(text);
+  }catch(error){if(message.isConnected)message.textContent=error.message;}
+  finally{if(reload.isConnected)reload.disabled=false;}
+ };
  const form=section.querySelector('#add-staff20');if(!form)return;
  form.onsubmit=e=>{
   e.preventDefault();if(!canEdit()||!session||saveBlocked){section.querySelector('#staff-message20').textContent='Sign in with an editing role and resolve any save error first.';return;}
