@@ -111,7 +111,7 @@ body{background:#eaf0f7;padding:24px;font-size:15px}.app{max-width:1100px;border
 @media print{body>*{display:none!important}body #print-zone{display:block!important}body{padding:0;margin:0;background:white}#print-zone .print-label{page-break-after:always;border:0;box-sizing:border-box}#print-zone .print-label:last-child{page-break-after:auto}}
 </style>
 <script>
-document.querySelector('.top').insertAdjacentHTML('afterend','<div class="demo-banner" dir="ltr">Demo version · fictional data · external services not connected</div>');
+
 const labelTab=document.createElement('button');labelTab.className='tab';labelTab.dataset.page='labels';labelTab.textContent='Labels';document.querySelector('.tabs').append(labelTab);labelTab.onclick=()=>{page='labels';render()};
 let labelDraft={bed:'',kind:'Patient',item:'',site:'',size:'',concentration:'',rate:'',prepared:'',expiry:'',by:'',width:80,height:50,copies:1};
 function labels5(){
