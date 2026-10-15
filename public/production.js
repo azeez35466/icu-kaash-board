@@ -1,3 +1,5 @@
+import {renderCare39,applyCare39,dashboard39,ventilation39,careRows39} from './care39.js';
+let nursingReady39=false;
 import {rememberConfig38,configuration38,saveSnapshot38,readSnapshot38,clearOffline38} from './offline38.js';
 let offline38=false;
 import {fitKardex36} from './kardex-layout36.js';
@@ -124,7 +126,7 @@ function installToolbar(){document.querySelectorAll('.production-toolbar').forEa
 
 // Real patient data stay in memory; this runtime never saves them to localStorage.
 
-document.addEventListener('click',e=>{if(!session)return;const button=e.target.closest('#save,#save-unified8,#archive-discharge3');if(button&&selected&&(!selected.name?.trim()||!selected.mrn?.trim())){e.preventDefault();e.stopImmediatePropagation();alert('Patient name and MRN are required.')}if(!canEdit()&&e.target.closest('button,input,select,textarea')&&!e.target.closest('.top,.tabs,.production-toolbar,.production-gate')&&!e.target.closest('.tab')&&!e.target.closest('[data-open],.bed,#close,.switch,#open-unified8,#patient-kardex6,#unified-kardex8,.quick-nav21,#k-print,#k-patient,#k-start,#k-paper36,#search21,#ward-shift24,#tools-shift24,#back-profile8,[data-workflow-open8],[data-record18],#record-search3,#records-prev18,#records-next18,#search11,[data-result-open11],[data-sched-view3],[data-shift3],[data-cal-open],[data-cal-move],[data-cal-day]')&&page!=='labels'){e.preventDefault();e.stopImmediatePropagation();status('This account has read-only access.')}},true);
+document.addEventListener('click',e=>{if(!session)return;if(canCare39()&&e.target.closest('.nursing-care39'))return;const button=e.target.closest('#save,#save-unified8,#archive-discharge3');if(button&&selected&&(!selected.name?.trim()||!selected.mrn?.trim())){e.preventDefault();e.stopImmediatePropagation();alert('Patient name and MRN are required.')}if(!canEdit()&&e.target.closest('button,input,select,textarea')&&!e.target.closest('.top,.tabs,.production-toolbar,.production-gate')&&!e.target.closest('.tab')&&!e.target.closest('[data-open],.bed,#close,.switch,#open-unified8,#patient-kardex6,#unified-kardex8,.quick-nav21,#k-print,#k-patient,#k-start,#k-paper36,#search21,#ward-shift24,#tools-shift24,#back-profile8,[data-workflow-open8],[data-record18],#record-search3,#records-prev18,#records-next18,#search11,[data-result-open11],[data-sched-view3],[data-shift3],[data-cal-open],[data-cal-move],[data-cal-day]')&&page!=='labels'){e.preventDefault();e.stopImmediatePropagation();status('This account has read-only access.')}},true);
 
 window.addEventListener('beforeunload',e=>{if(session&&(formDraft24||dirty20())){e.preventDefault();e.returnValue=''}});
 
@@ -314,7 +316,7 @@ async function enterApp20(){
 
  const memberships=await rest('kaash_members?unit_id=eq.'+encodeURIComponent(config.unitId)+'&select=role');
 
- if(!Array.isArray(memberships)||!memberships[0]?.role||memberships[0].role==='print_agent')throw Error('No application membership for this unit.');member=memberships[0];
+ if(!Array.isArray(memberships)||!memberships[0]?.role||memberships[0].role==='print_agent')throw Error('No application membership for this unit.');member=memberships[0];nursingReady39=false;if(member.role==='nurse'){try{nursingReady39=await rest('rpc/kaash_nursing_access39',{method:'POST',body:JSON.stringify({p_unit:config.unitId})})===true}catch{}}
 
  const rows=await rest('kaash_boards?unit_id=eq.'+encodeURIComponent(config.unitId)+'&select=data,revision');if(!Array.isArray(rows)||!rows[0]?.data)throw Error('Unit board is not initialized.');
 
@@ -386,13 +388,13 @@ function applyReadOnly20(){
 
  if(canEdit())return;
 
- document.querySelectorAll('#main input,#main select,#main textarea,#patient-fields input,#patient-fields select,#patient-fields textarea,.assignment-overlay3 input,.assignment-overlay3 select').forEach(el=>{if(!el.matches('#record-search3,#search11,#search21,#q,.search,#cloud-printer'))el.disabled=true});
+ document.querySelectorAll('#main input,#main select,#main textarea,#patient-fields input,#patient-fields select,#patient-fields textarea,.assignment-overlay3 input,.assignment-overlay3 select').forEach(el=>{if(!(canCare39()&&el.closest('.nursing-care39'))&&!el.matches('#record-search3,#search11,#search21,#q,.search,#cloud-printer'))el.disabled=true});
 
  main.querySelectorAll('[data-edit-bed3],[data-duty17],#other-duty17,#network-print').forEach(el=>el.disabled=true);
 
 }
 
-document.addEventListener('input',e=>{if(member&&!canEdit()&&e.target.closest('#patient-fields,.assignment-overlay3')){e.preventDefault();e.stopImmediatePropagation()}},true);
+document.addEventListener('input',e=>{if(member&&!canEdit()&&!(canCare39()&&e.target.closest('.nursing-care39'))&&e.target.closest('#patient-fields,.assignment-overlay3')){e.preventDefault();e.stopImmediatePropagation()}},true);
 
 function installStaffPanel20(){
 
@@ -506,7 +508,7 @@ detail=function(){
 
   const completed=(p.tasks||[]).filter(task=>task.status==='Completed').length;
 
-  fields.innerHTML=`<section class="section"><div class="toprow"><div><div class="label">${safe(p.bed)} · MRN ${safe(p.mrn||'—')}</div></div>${pill(p.code||'Not documented',p.code==='DNR'?'red':'')}</div><p>${safe(p.diagnosis||'Diagnosis not documented')}</p><p class="meta">Age ${safe(p.age||'—')} · ${safe(p.gender||'—')} · Admission ${safe(p.doa||'—')} ${safe(p.toa||'')}</p></section><section class="section"><h3>Current care</h3><div class="grid2">${metric('Airway / oxygen',p.oxygen||'Not documented')}${metric('Precautions',p.precautions||'Not documented')}${metric('Recorded active lines',(p.lines||[]).filter(line=>!['Removed','Stopped'].includes(line.stage)).length)}${metric('Pending tasks',(p.tasks||[]).length-completed)}</div><p class="meta">Special endorsement: ${safe(p.endorsement||'—')}</p></section>${p.status?`<section class="section"><h3>Discharge details</h3><p>${safe(p.dischargeType||p.status)} · ${safe(p.dischargedAtISO||p.dischargedAt||'Not documented')}</p><p class="destination-preview34">Discharged to: ${safe(destinationLabel34(p)||'Not documented')}</p></section>`:''}<section class="section"><h3>Next action</h3><div class="label-tools"><button class="btn secondary quick-nav21" id="quick-care21">Open care & handover</button><button class="btn secondary quick-nav21" id="quick-kardex21">Open 24h Kardex</button>${canEdit()&&!p.status?'<button class="btn secondary" id="quick-discharge21">Discharge</button>':''}</div></section><p id="patient-save-status21" role="status" class="sub">${safe(cloudStatus.textContent)}</p>`;
+  fields.innerHTML=`<section class="section"><div class="toprow"><div><div class="label">${safe(p.bed)} · MRN ${safe(p.mrn||'—')}</div></div>${pill(p.code||'Not documented',p.code==='DNR'?'red':'')}</div><p>${safe(p.diagnosis||'Diagnosis not documented')}</p><p class="meta">Age ${safe(p.age||'—')} · ${safe(p.gender||'—')} · Admission ${safe(p.doa||'—')} ${safe(p.toa||'')}</p></section><section class="section"><h3>Current care</h3><div class="grid2">${metric('Airway / oxygen',p.oxygen||'Not documented')}${metric('Precautions',p.precautions||'Not documented')}${metric('Recorded active lines',(p.lines||[]).filter(line=>!['Removed','Stopped'].includes(line.stage)).length)}${metric('Pending tasks',(p.tasks||[]).length-completed)}</div><p class="meta">Special endorsement: ${safe(p.endorsement||'—')}</p></section>${p.status?`<section class="section"><h3>Discharge details</h3><p>${safe(p.dischargeType||p.status)} · ${safe(p.dischargedAtISO||p.dischargedAt||'Not documented')}</p>${p.dischargeType==='Expired'?'':`<p class="destination-preview34">Discharged to: ${safe(destinationLabel34(p)||'Not documented')}</p>`}</section>`:''}<section class="section"><h3>Next action</h3><div class="label-tools"><button class="btn secondary quick-nav21" id="quick-care21">Open care & handover</button><button class="btn secondary quick-nav21" id="quick-kardex21">Open 24h Kardex</button>${canEdit()&&!p.status?'<button class="btn secondary" id="quick-discharge21">Discharge</button>':''}</div></section><p id="patient-save-status21" role="status" class="sub">${safe(cloudStatus.textContent)}</p>`;
 
   document.getElementById('quick-care21').onclick=()=>{patientView21='advanced';patientUnified8()};
 
@@ -532,7 +534,7 @@ patientUnified8=function(){originalUnified21();const container=document.getEleme
 
 patientList=function(){
 
- main.innerHTML='<h2 class="title">Patient list</h2><p class="sub">Bed, identity and diagnosis at a glance. Open a patient for further details.</p><input class="search" id="search21" placeholder="Search name, MRN, bed or diagnosis"><div id="list21"></div>';
+ main.innerHTML='<h2 class="title">Patient list</h2><p class="sub">Bed, identity and current care at a glance. Expand respiratory support, contraptions or infusions for details.</p><input class="search" id="search21" placeholder="Search name, MRN, bed or diagnosis"><div id="list21"></div>';
 
  const paint=()=>{
 
@@ -540,7 +542,7 @@ patientList=function(){
 
   const query=englishDigits26(document.getElementById('search21').value).trim().toLowerCase(),rows=active().filter(p=>[p.name,p.mrn,p.bed,p.diagnosis].some(value=>String(value||'').toLowerCase().includes(query))).sort((a,b)=>a.bed.localeCompare(b.bed));
 
-  document.getElementById('list21').innerHTML=rows.map(p=>`<article class="card"><div class="toprow"><div><div class="label">${safe(p.bed)} · MRN ${safe(p.mrn)}</div><h3>${safe(p.name)}</h3></div>${pill(p.code||'Not documented',p.code==='DNR'?'red':'')}</div><p>${safe(p.diagnosis||'Diagnosis not documented')}</p><div>${p.oxygen?pill(p.oxygen,'blue'):''}${p.precautions&&p.precautions!=='Standard'?pill(p.precautions,'amber'):''}</div><p class="meta">Admission ${safe(p.doa||'—')} · Pending tasks ${(p.tasks||[]).filter(task=>task.status!=='Completed').length}</p><button class="btn secondary" data-open="${safe(p.bed)}">View patient</button>${canEdit()?`<details class="section"><summary>Transfer bed</summary><select data-destination21="${safe(p.bed)}"><option value="">Choose available bed</option>${groups.flatMap(group=>group.ids).filter(bed=>bed!==p.bed&&!active().some(patient=>patient.bed===bed)).map(bed=>`<option>${safe(bed)}</option>`).join('')}</select><input data-transfer-by21="${safe(p.bed)}" placeholder="Staff / initials"><button class="btn secondary" data-transfer21="${safe(p.bed)}">Transfer</button></details>`:''}</article>`).join('')||'<section class="section">No matching patients. Select an available bed in Census to admit a patient.</section>';
+  document.getElementById('list21').innerHTML=rows.map(p=>`<article class="card"><div class="toprow"><div><div class="label">${safe(p.bed)} · MRN ${safe(p.mrn)}</div><h3>${safe(p.name)}</h3></div>${pill(p.code||'Not documented',p.code==='DNR'?'red':'')}</div><p>${safe(p.diagnosis||'Diagnosis not documented')}</p><div>${p.precautions&&p.precautions!=='Standard'?pill(p.precautions,'amber'):''}</div><p class="meta">Admission ${safe(p.doa||'—')} · Pending tasks ${(p.tasks||[]).filter(task=>task.status!=='Completed').length}</p>${dashboard39(p)}<button class="btn secondary" data-open="${safe(p.bed)}">View patient</button>${canEdit()?`<details class="section"><summary>Transfer bed</summary><select data-destination21="${safe(p.bed)}"><option value="">Choose available bed</option>${groups.flatMap(group=>group.ids).filter(bed=>bed!==p.bed&&!active().some(patient=>patient.bed===bed)).map(bed=>`<option>${safe(bed)}</option>`).join('')}</select><input data-transfer-by21="${safe(p.bed)}" placeholder="Staff / initials"><button class="btn secondary" data-transfer21="${safe(p.bed)}">Transfer</button></details>`:''}</article>`).join('')||'<section class="section">No matching patients. Select an available bed in Census to admit a patient.</section>';
 
   document.querySelectorAll('[data-open]').forEach(button=>button.onclick=()=>open(active().find(p=>p.bed===button.dataset.open)));
 
@@ -882,7 +884,7 @@ function enhancePatient24(){
 
   discharge.disabled=true;document.getElementById('patient-fields').append(box);box.scrollIntoView({block:'nearest'});
 
-  box.querySelector('form').oninput=()=>{formDraft24=true;previewDischarge34(box)};
+  const disposition39=()=>{const expired=box.querySelector('#discharge-type24').value==='Expired';const destination=box.querySelector('.discharge-destination34');destination.hidden=expired;destination.querySelectorAll('input').forEach(input=>input.disabled=expired);previewDischarge34(box)};box.querySelector('#discharge-type24').onchange=disposition39;box.querySelector('form').oninput=()=>{formDraft24=true;disposition39()};
 
   box.querySelector('#cancel-discharge34').onclick=()=>{formDraft24=false;box.remove();discharge.disabled=false};
 
@@ -890,7 +892,7 @@ function enhancePatient24(){
 
    if(at===null||at>Date.now()+60000||(admit!==null&&at<admit)||!type){box.querySelector('#discharge-error24').textContent='Choose a valid discharge time and disposition. Discharge cannot precede admission or be in the future.';return;}
 
-   ensureAdmission8(patient);const record={...patient,status:'Discharged',dischargedAt:date24(new Date(at).toISOString()),dischargedAtISO:new Date(at).toISOString(),dischargeType:type,dischargeDestination:readDischargeDestination34(box)};archivedRecords3.unshift(record);patients.splice(patients.indexOf(patient),1);formDraft24=false;queueSave();document.getElementById('shade').classList.remove('show');page='records';render();
+   ensureAdmission8(patient);const record={...patient,status:'Discharged',dischargedAt:date24(new Date(at).toISOString()),dischargedAtISO:new Date(at).toISOString(),dischargeType:type,dischargeDestination:type==='Expired'?null:readDischargeDestination34(box)};archivedRecords3.unshift(record);patients.splice(patients.indexOf(patient),1);formDraft24=false;queueSave();document.getElementById('shade').classList.remove('show');page='records';render();
 
   };
 
@@ -1097,7 +1099,7 @@ function installOfflineToolbar38(bar){
   if(!navigator.onLine||dirty20())throw Error('Connect and save all changes before preparing offline access.');
   if(!('serviceWorker' in navigator))throw Error('This browser does not support offline viewing.');
   const registration=await navigator.serviceWorker.register('/sw38.js');
-  await Promise.race([navigator.serviceWorker.ready,new Promise((_,reject)=>setTimeout(()=>reject(Error('Offline shell preparation timed out. Retry while connected.')),20000))]);
+  if(registration.installing)await new Promise((resolve,reject)=>{const worker=registration.installing;const timeout=setTimeout(()=>reject(Error('Offline update timed out. Retry online.')),20000);worker.addEventListener('statechange',()=>{if(worker.state==='activated'){clearTimeout(timeout);resolve();}if(worker.state==='redundant'){clearTimeout(timeout);reject(Error('Offline update failed. Retry online.'));}});});await Promise.race([navigator.serviceWorker.ready,new Promise((_,reject)=>setTimeout(()=>reject(Error('Offline shell preparation timed out. Retry while connected.')),20000))]);
   if(!registration.active)throw Error('Offline shell is still installing. Retry shortly.');
   rememberConfig38(config);await saveSnapshot38({data:JSON.parse(serverFingerprint),revision:boardRevision,user:session.user.id,unit:config.unitId,deadline:sessionDeadline20,savedAt:Date.now()});
   status('Offline snapshot ready · encrypted · this tab only · expires with your one-hour session. Re-prepare after changes.');
@@ -1106,6 +1108,52 @@ function installOfflineToolbar38(bar){
 }
 window.addEventListener('offline',()=>status('Connection lost · Do not edit. A prepared snapshot can be opened by reloading this tab. Unsaved changes must be exported first.'));
 window.addEventListener('online',()=>{if(offline38)status('Connection restored · Reconnect & reload to validate access and load current data. No offline edits are synchronized.');});
+function canCare39(){return canEdit()||(!offline38&&navigator.onLine&&member?.role==='nurse'&&nursingReady39);}
+async function saveCare39(patient,key,rows){
+ if(!canCare39()||patient.status)throw Error('Online nursing editing permission is required.');
+ if(dirty20())throw Error('Save existing changes first.');
+ if(canEdit()){applyCare39(patient,key,rows);await sync();if(saveBlocked)throw Error('Database save failed. Keep this page open and retry.');return;}
+ const result=await rest('rpc/kaash_save_nursing_care39',{method:'POST',body:JSON.stringify({p_unit:config.unitId,p_admission:patient.admissionId,p_revision:boardRevision,p_section:key,p_rows:rows})});
+ if(!result?.data||!Number.isInteger(result.revision))throw Error('Save was not confirmed.');
+ installBoard(result.data);boardRevision=result.revision;serverFingerprint=JSON.stringify(captureBoard());const current=patients.find(p=>p.admissionId===patient.admissionId);Object.assign(patient,clone(current));selected=patient;status('Saved to Supabase · nursing care · revision '+boardRevision);
+}
+function openCare39(p){
+ if(!p)return;const fields=document.getElementById('patient-fields');fields.classList.add('nursing-care39');
+ renderCare39(fields,p,{editable:canCare39()&&!p.status,onDraft:value=>{formDraft24=value;},save:(key,rows)=>saveCare39(p,key,rows),openKardex:()=>{document.getElementById('shade').classList.remove('show');kardexBed=p.bed;page='kardex';render();}});
+}
+function conditionalProfile39(fields){
+ const oxygen=fields.querySelector('[data-key="oxygen"]');if(!oxygen)return;
+ const update=()=>{const show=ventilation39({oxygen:oxygen.value,airway:fields.querySelector('[data-key="airway"]')?.value});for(const key of ['ventMode','fio2','peep','tidalVolume','respiratoryRate']){const el=fields.querySelector('[data-key="'+key+'"]');if(el)el.closest('.field').hidden=!show;}};
+ oxygen.addEventListener('change',update);fields.querySelector('[data-key="airway"]')?.addEventListener('change',update);update();
+}
+function mountCare39(){
+ const fields=document.getElementById('patient-fields');if(!fields||!selected)return;conditionalProfile39(fields);fields.classList.remove('nursing-care39');
+ const quick=document.getElementById('quick-care21');if(quick){quick.textContent='Nursing care · fluids, tubes, infusions & blood';quick.onclick=()=>openCare39(selected);const full=document.createElement('button');full.className='btn secondary quick-nav21';full.id='full-care39';full.textContent='Assessments, orders & handover';full.onclick=()=>{patientView21='advanced';patientUnified8();};quick.after(full);}
+ const record=document.getElementById('unified-kardex8');if(record&&!document.getElementById('nursing-open39')){const b=document.createElement('button');b.id='nursing-open39';b.className='btn secondary quick-nav21';b.textContent='Nursing care workspace';b.onclick=()=>openCare39(selected);record.after(b);}
+ const form=document.getElementById('quick-admission21');if(form&&!form.querySelector('.vent39')){
+  const section=document.createElement('fieldset');section.className='section vent39';section.innerHTML='<legend>Ventilator settings · documented values only</legend><p class="sub">No default settings. Existing values remain in the record when support changes.</p><div class="fields">'+[['ventMode','Mode','text',['VC-AC','PC-AC','SIMV','PSV','CPAP','BiPAP']],['fio2','FiO₂ %','number'],['peep','PEEP · cmH₂O','number'],['tidalVolume','VT · mL','number'],['respiratoryRate','Set RR · /min','number'],['pressureSupport','Pressure support · cmH₂O','number']].map(([key,label,type,options])=>`<div class="field"><label>${label}<input name="${key}" type="${type}" ${type==='number'?'min="0" step="any"':''} ${key==='fio2'?'max="100"':''} ${options?'list="vent-modes39"':''} value="${safe(selected[key]||'')}"></label>${options?'<datalist id="vent-modes39">'+options.map(v=>`<option value="${v}"></option>`).join('')+'</datalist>':''}</div>`).join('')+'</div>';
+  const oxygen=form.elements.namedItem('oxygen');oxygen.closest('.field').after(section);const toggle=()=>{section.hidden=!ventilation39({oxygen:oxygen.value});};oxygen.addEventListener('change',toggle);toggle();
+  const original=form.onsubmit;form.onsubmit=function(e){const p=selected,values=Object.fromEntries([...section.querySelectorAll('input')].map(input=>[input.name,input.value]));original.call(this,e);if(!form.isConnected&&canEdit()){Object.assign(p,values);queueSave();}};
+ }
+}
+const detailBefore39=detail;detail=function(){detailBefore39();mountCare39();};
+const unifiedBefore39=patientUnified8;patientUnified8=function(){unifiedBefore39();organizeClinical39();mountCare39();};
+function organizeClinical39(){
+ const fields=document.getElementById('patient-fields');if(!fields)return;
+ const cells=[...fields.querySelectorAll('[data-clinical-field9]')];if(!cells.length)return;
+ const groups=[['Clinical priorities & neuro',['shiftPriority','gcs','gcsE','gcsV','gcsM','neuroTime','pupils','pupilRight','pupilLeft']],['Respiratory support',['ventMode','fio2','peep','tidalVolume','respiratoryRate']],['History, team & nutrition',['icuPhysician','primaryPhysician','medicalHistory','surgicalHistory','diet','feeding']],['Safety, skin & escalation',['restraint','piStage','pi','panic']]];
+ const host=cells[0].closest('.fields'),parent=host.parentElement;parent.classList.add('clinical-groups39');
+ for(const [title,keys] of groups){const box=document.createElement('details');box.className='section';box.innerHTML=`<summary>${title}</summary><div class="fields"></div>`;host.before(box);for(const key of keys){const node=host.querySelector(`[data-clinical-field9="${key}"]`)?.closest('.field');if(node)box.querySelector('.fields').append(node);}if(title==='Respiratory support'&&!ventilation39(selected))box.hidden=true;}
+ if(!host.children.length)host.remove();
+ // Put each clinical list in its own disclosure instead of nesting five lists in one giant section.
+ const outer=parent.closest('details');if(outer){const note=document.createElement('p');note.className='sub';note.textContent='Patient assessment and order summaries · use Nursing care for fluid, RBS, line, infusion and blood entries.';outer.before(note);for(const child of [...parent.children])if(child.tagName==='DETAILS')outer.before(child);}
+ for(const details of fields.querySelectorAll('details')){const title=details.querySelector(':scope > summary')?.textContent||'';if(/Blood transfusion|Infusions & IV fluids|Lines & tubes/.test(title)){const tip=document.createElement('p');tip.className='sub';tip.textContent='Use Nursing care workspace for faster structured entry. Existing entries remain available here.';details.prepend(tip);}}
+}
+// Nursing fluid/RBS entries are admission-bound and are included exactly once in the selected print period.
+const printBefore39=kPrint;kPrint=async function(d){const p=active().find(p=>p.bed===kardexBed),start=new Date(kardexStart+'+03:00').getTime(),end=start+86400000,within=r=>{const ms=new Date(r.time+'+03:00').getTime();return ms>=start&&ms<end;};return printBefore39({...d,io:[...(d.io||[]),...careRows39(p||{},'io').filter(within)],obs:[...(d.obs||[]),...careRows39(p||{},'rbs').filter(within)].sort((a,b)=>a.time.localeCompare(b.time))});};
+const documentBefore39=kDocument7;kDocument7=function(p,d,start){const html=documentBefore39(p,d,start);return p.pressureSupport?html.replace('<td>Settings</td><td>','<td>Settings</td><td>PS '+safe(p.pressureSupport)+' cmH₂O · '):html;};
+const sheet39=document.createElement('link');sheet39.rel='stylesheet';sheet39.href='/care39.css';document.head.append(sheet39);
+
 void initializeSession20();;
 
 

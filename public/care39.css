@@ -1,0 +1,14 @@
+@media screen {
+ .care-nav39{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.care-nav39 button{padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--surface,#fff);color:var(--ink);font-weight:650}.care-nav39 button[aria-pressed=true]{background:#17677f;color:white}.care-nav39 small{margin-left:8px}
+ .care-entry39{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin:12px 0}.care-entry39 span{display:flex;flex-direction:column;gap:5px;overflow-wrap:anywhere}.care-entry39 small{color:var(--muted)}.care-history39 .card{margin-top:10px}.patient-dashboard39{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0}.patient-dashboard39 details{padding:10px;border:1px solid var(--line);border-radius:10px}.patient-dashboard39 p{overflow-wrap:anywhere}.patient-dashboard39 summary{padding:4px}.vent39[hidden],.discharge-destination34[hidden]{display:none!important}
+ html[data-theme=dark] :is(.catalog-results button,.procedure-card select,.procedure-card input,.catalog-results input,.remove-item,.care-nav39 button){background:#183447;color:#edf5fb;border-color:#547184}
+ html[data-theme=dark] :is(.catalog-results button:hover,.care-nav39 button[aria-pressed=true]){background:#285d75;color:white}
+ html[data-theme=dark] :is(.procedure-card option,.catalog-results option){background:#102535;color:#edf5fb}
+ html[data-theme=dark] .patient-dashboard39 details{background:#162e40;color:#edf5fb;border-color:#547184}
+ html[data-theme=dark] .care-entry39 small{color:#bfd2df}
+ html[data-theme=dark] .btn.secondary{background:var(--surface-alt34,#223b51);color:var(--text34,#edf4fc);border-color:var(--border34,#7d98af)}
+ .read-only .nursing-care39 .field :is(input,select,textarea){pointer-events:auto}
+ .clinical-groups39>details{margin:10px 0}.clinical-groups39>details>summary{font-size:15px}.care-work39 h3{margin:14px 0}.care-work39 .btn{margin:5px 6px 5px 0}
+ @media(min-width:1000px){#list21>.card{display:grid;grid-template-columns:220px minmax(0,1fr) 135px;column-gap:16px;align-items:start}#list21>.card>.toprow{grid-column:1;grid-row:1}#list21>.card>p,#list21>.card>div:not(.toprow):not(.patient-dashboard39){grid-column:1;margin:5px 0}#list21>.card>.patient-dashboard39{grid-column:2;grid-row:1 / span 4;grid-template-columns:repeat(2,minmax(0,1fr));margin:0}#list21>.card>[data-open]{grid-column:3;grid-row:1}#list21>.card>details{grid-column:3;margin:8px 0}}
+ @media(max-width:600px){.patient-dashboard39{grid-template-columns:1fr}.care-nav39 button{flex:1 0 42%;min-height:46px}.care-entry39{grid-template-columns:repeat(2,minmax(0,1fr))}}
+}

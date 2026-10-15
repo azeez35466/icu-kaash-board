@@ -5,7 +5,7 @@ export function dischargeDestination34(department='',room='',bed=''){
  return {department:clean(department,80),room:clean(room,32),bed:clean(bed,32)};
 }
 export function destinationLabel34(record){
- const d=record?.dischargeDestination;if(!d||typeof d!=='object')return '';
+ if(record?.dischargeType==='Expired')return '';const d=record?.dischargeDestination;if(!d||typeof d!=='object')return '';
  const value=dischargeDestination34(d.department,d.room,d.bed);
  return [value.department,value.room?'Room '+value.room:'',value.bed?'Bed '+value.bed:''].filter(Boolean).join(' · ');
 }
