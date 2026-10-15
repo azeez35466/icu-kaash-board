@@ -1,3 +1,4 @@
+import {installDutyPicker40,installTV40} from './display40.js';
 import {renderCare39,applyCare39,dashboard39,ventilation39,careRows39} from './care39.js';
 let nursingReady39=false;
 import {rememberConfig38,configuration38,saveSnapshot38,readSnapshot38,clearOffline38} from './offline38.js';
@@ -126,7 +127,7 @@ function installToolbar(){document.querySelectorAll('.production-toolbar').forEa
 
 // Real patient data stay in memory; this runtime never saves them to localStorage.
 
-document.addEventListener('click',e=>{if(!session)return;if(canCare39()&&e.target.closest('.nursing-care39'))return;const button=e.target.closest('#save,#save-unified8,#archive-discharge3');if(button&&selected&&(!selected.name?.trim()||!selected.mrn?.trim())){e.preventDefault();e.stopImmediatePropagation();alert('Patient name and MRN are required.')}if(!canEdit()&&e.target.closest('button,input,select,textarea')&&!e.target.closest('.top,.tabs,.production-toolbar,.production-gate')&&!e.target.closest('.tab')&&!e.target.closest('[data-open],.bed,#close,.switch,#open-unified8,#patient-kardex6,#unified-kardex8,.quick-nav21,#k-print,#k-patient,#k-start,#k-paper36,#search21,#ward-shift24,#tools-shift24,#back-profile8,[data-workflow-open8],[data-record18],#record-search3,#records-prev18,#records-next18,#search11,[data-result-open11],[data-sched-view3],[data-shift3],[data-cal-open],[data-cal-move],[data-cal-day]')&&page!=='labels'){e.preventDefault();e.stopImmediatePropagation();status('This account has read-only access.')}},true);
+document.addEventListener('click',e=>{if(!session)return;if(canCare39()&&e.target.closest('.nursing-care39'))return;const button=e.target.closest('#save,#save-unified8,#archive-discharge3');if(button&&selected&&(!selected.name?.trim()||!selected.mrn?.trim())){e.preventDefault();e.stopImmediatePropagation();alert('Patient name and MRN are required.')}if(!canEdit()&&e.target.closest('button,input,select,textarea')&&!e.target.closest('.top,.tabs,.production-toolbar,.production-gate')&&!e.target.closest('.tab')&&!e.target.closest('[data-open],.bed,#close,.switch,#open-unified8,#patient-kardex6,#unified-kardex8,.quick-nav21,#tv-launch40,#tv-exit40,#tv-duties40,#k-print,#k-patient,#k-start,#k-paper36,#search21,#ward-shift24,#tools-shift24,#back-profile8,[data-workflow-open8],[data-record18],#record-search3,#records-prev18,#records-next18,#search11,[data-result-open11],[data-sched-view3],[data-shift3],[data-cal-open],[data-cal-move],[data-cal-day]')&&page!=='labels'){e.preventDefault();e.stopImmediatePropagation();status('This account has read-only access.')}},true);
 
 window.addEventListener('beforeunload',e=>{if(session&&(formDraft24||dirty20())){e.preventDefault();e.returnValue=''}});
 
@@ -1162,6 +1163,9 @@ const kardexViewBefore39=kardex6;kardex6=function(){
 const documentBefore39=kDocument7;kDocument7=function(p,d,start){const html=documentBefore39(p,d,start);return p.pressureSupport?html.replace('<td>Settings</td><td>','<td>Settings</td><td>PS '+safe(p.pressureSupport)+' cmH₂O · '):html;};
 const sheet39=document.createElement('link');sheet39.rel='stylesheet';sheet39.href='/care39.css';document.head.append(sheet39);
 
+
+const teamBefore40=team;team=function(){teamBefore40();installDutyPicker40(main,canEdit());installTV40(main,()=>({groups,rn:shiftRNs[currentShift3]||{},pct:shiftPCTs[currentShift3]||{},duties:{...Object.fromEntries([...shiftDutyTypes3,'Other duty'].map(task=>[task,''])),...shiftDuties3[currentShift3]},shift:currentShift3,date:scheduleDate3}));};
+const displaySheet40=document.createElement('link');displaySheet40.rel='stylesheet';displaySheet40.href='/display40.css';document.head.append(displaySheet40);
 void initializeSession20();;
 
 
