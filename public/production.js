@@ -1,5 +1,4 @@
 import {mergeBoard30,pause30,retryDelay30,admissionSignature30} from './concurrency30.js';
-import {installAssistant31} from './assistant-ui31.js';
 import {englishDigits26,onCallReport26} from './workflow26.js';
 import {employeeLogin25} from './employee-login.js';
 import {createBackupWriter,verifyBackup} from './backup-tools.js';
@@ -525,12 +524,6 @@ const teamBefore26=team;team=function(){teamBefore26();main.querySelectorAll('[d
 const renderBefore26=render;render=function(){renderBefore26();installOnCall26();enhanceAdmission26();englishControls26();};
 const style26=document.createElement('style');style26.textContent='.sr-only26{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}[hidden]{display:none!important}.assignment-overlay3 input.search{width:100%;margin-bottom:6px}#attendance-rows26{max-height:380px;overflow:auto}#attendance-rows26 .row{gap:10px;align-items:center}#attendance-rows26 b{font-size:12px;overflow-wrap:anywhere}#attendance-rows26 select{min-width:125px}.duty-card3 input.search{min-width:0;width:100%;font-size:12px}.admission-optional26 summary{cursor:pointer;font-weight:600}#oncall-panel26 .label-tools{flex-wrap:wrap}';document.head.append(style26);
 
-installAssistant31({
- getState:()=>{if(!session||!member)throw Error('Sign in required.');if(dirty20())throw Error('Save or export pending changes before preparing a confirmed summary.');return {board:JSON.parse(serverFingerprint||'{}'),revision:boardRevision,shift:currentShift3};},
- assertSession:()=>{if(!session||!member||Date.now()>=sessionDeadline20){if(session)expireSession20();throw Error('Your session ended. Sign in again.');}},
- refresh:reloadBoard24,
- request:async(method,body)=>{await refreshSession();const response=await fetch('/api/assistant',{method,headers:{Authorization:'Bearer '+session.access_token,'Content-Type':'application/json'},...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(55000)});const data=await readJSON20(response,'Assistant');if(!response.ok)throw Error(data?.error||'Assistant unavailable.');return data;}
-});
 void initializeSession20();;
 
 
