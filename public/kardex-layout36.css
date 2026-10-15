@@ -1,0 +1,25 @@
+/* Four measured columns across two pages; rows may continue with repeated headers. */
+html .k36-page{display:flex!important;flex-direction:column;width:281mm;height:193mm;font:10px/1.18 Arial,sans-serif;overflow:visible;color:#193743;background:white}
+html .k36-page[data-paper36=A3]{width:404mm;height:281mm}
+html .k36-page header,html .k36-page .k7-id,html .k36-page .k7-alert,html .k36-page footer{flex:none}
+html .k36-page header{padding-bottom:4px;margin-bottom:4px}
+html .k36-page header b{font-size:19px}html .k36-page header strong{font-size:12px}html .k36-page header small{font-size:8px}
+html .k36-page .k7-id{gap:3px 7px;padding-bottom:4px;font-size:9px}
+html .k36-page .k7-alert{padding:4px;margin:4px 0;font-size:9px}
+html .k36-page .k36-columns{display:grid;grid-template-columns:1fr 1fr;gap:12px;flex:1;min-height:0;margin-top:2px}
+html .k36-column{min-width:0;min-height:0;overflow:visible}
+html .k36-page .k36-section{margin:0 0 6px;padding:0;break-inside:auto}
+html .k36-page h3{font-size:10px;line-height:1.15;margin:0 0 3px;padding:4px;background:#edf5f7;color:#193743}
+html .k36-page .k36-table{font-size:inherit;line-height:inherit;margin:0 0 3px;width:100%;border-collapse:collapse;table-layout:fixed}
+html .k36-page .k36-table :is(th,td){padding:3px;white-space:pre-wrap;overflow-wrap:anywhere;vertical-align:top;line-height:inherit;color:#193743;border-color:#b5c7d0}
+html .k36-page p{font-size:inherit;line-height:inherit;margin:3px 0;white-space:pre-wrap;overflow-wrap:anywhere}
+html .k36-page .k36-overview{border-bottom:1px solid #dce4e8;padding-bottom:2px}
+html .k36-page .k36-missing{font-size:9px;color:#4a5e69}
+html .k36-page footer{font-size:8px;line-height:1.2;padding-top:3px;margin-top:5px}
+html .k36-page[data-density36=compact]{font-size:9.5px;line-height:1.15}
+html .k36-page[data-density36=compact] .k36-table :is(th,td){padding:2.5px}
+html .k36-page[data-density36=compact] .k36-section{margin-bottom:5px}
+html .k36-page[data-density36=dense]{font-size:9px;line-height:1.12}
+html .k36-page[data-density36=dense] .k36-table :is(th,td){padding:2px}
+html .k36-page[data-density36=dense] .k36-section{margin-bottom:4px}
+@media print{#print-zone.k36-zone{display:block!important}html body #print-zone.k7-zone .k36-page{display:flex!important}.k36-page{break-after:page}.k36-page:last-child{break-after:auto}}

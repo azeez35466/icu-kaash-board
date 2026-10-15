@@ -1,0 +1,10 @@
+/* Balanced two-column Kardex layout; preserve font size and overflow protection. */
+html .k7-page .k7-table th,html .k7-page .k7-table td{padding:3px}
+html .k7-page h3{padding:4px;margin:6px 0 3px}
+html .k7-page .k7-columns{display:block;columns:2;column-gap:15px}
+html .k7-page .k7-columns>section{break-inside:avoid;display:inline-block;width:100%;vertical-align:top}
+html .k7-page .k7-id{gap:4px;padding-bottom:4px}
+html .k7-page header{margin-bottom:5px}
+html .k7-page .k7-alert{padding:4px;margin:4px 0}
+html .k7-page p{margin:4px 0}
+html .k7-page footer{margin-top:5px}
