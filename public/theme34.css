@@ -1,0 +1,73 @@
+/* Shared screen palette. Print documents keep their existing white paper design. */
+@media screen {
+ :root{--surface34:#ffffff;--surface-alt34:#edf3f8;--field34:#ffffff;--text34:#172f45;--muted34:#4c6378;--border34:#7890a5;--accent34:#155c9a;--on-accent34:#ffffff;--focus34:#075ec1;--navy:#102a43;--blue:#155c9a;--pale:#e7f0fa;--ink:#172f45;--muted:#4c6378;--line:#c6d3df;--bg:#f1f5f9;color-scheme:light}
+ html[data-theme=dark]{--surface34:#182b3d;--surface-alt34:#223b51;--field34:#0d2031;--text34:#edf4fc;--muted34:#b5c8da;--border34:#7d98af;--accent34:#a6d3ff;--on-accent34:#0a233b;--focus34:#ffd784;--navy:#0b1d2e;--blue:#a6d3ff;--pale:#223f59;--ink:#edf4fc;--muted:#b5c8da;--line:#49647c;--bg:#0d1e2e;color-scheme:dark}
+ html[data-theme] body{background:var(--bg);color:var(--text34)}
+ html[data-theme] .app{background:var(--bg);border-color:var(--line)}
+ html[data-theme] :is(.section,.card,.stat,.field,.assign,.attendance .att,.bed-board-section3,.duty-board-section3,.schedule-controls3,.bed-assignment-card3,.duty-card3,.procedure-card,.assignment-modal3,.calendar-pop,.modal,.production-login){background:var(--surface34);color:var(--text34);border-color:var(--line);box-shadow:0 4px 18px #00000008}
+ html[data-theme] :is(.title,.card h3,.secthead h3,.stat strong,.assign b,.modalhead h2,details>summary,.duty-card3>span,.procedure-card-top b){color:var(--text34)}
+ html[data-theme] :is(.sub,.meta,.fine,.stat span,.field label,.label,.row span,.secthead small,.metric small){color:var(--muted34)}
+ html[data-theme] :is(.diagnosis,.metric b){color:var(--text34)}
+ html[data-theme] .metric{background:var(--surface-alt34);border-color:var(--line)}
+ html[data-theme] :is(.tabs,.production-toolbar){background:var(--surface34);border-color:var(--line)}
+ html[data-theme] .tab{color:var(--muted34)}
+ html[data-theme] .tab.on{background:var(--accent34);color:var(--on-accent34);box-shadow:none}
+ html[data-theme] .tab:hover:not(.on){background:var(--surface-alt34);color:var(--text34)}
+ html[data-theme] :is(.demo-banner,#save-status11,#directory-status25){background:var(--surface-alt34);color:var(--text34);border-color:var(--line)}
+ html[data-theme] :is(.app,.modal,.assignment-modal3,.calendar-pop,.production-gate) :is(input,select,textarea){background:var(--field34);color:var(--text34);border:1px solid var(--border34);border-radius:9px;min-height:44px;padding:10px;max-width:100%;font-size:16px;line-height:1.5}
+ html[data-theme] :is(input,textarea)::placeholder{color:var(--muted34);opacity:1}
+ html[data-theme] :is(input,select,textarea):disabled{opacity:1;-webkit-text-fill-color:var(--muted34);color:var(--muted34);background:var(--surface-alt34);cursor:not-allowed}
+ html[data-theme] :is(input,select,textarea)[readonly]{background:var(--surface-alt34);color:var(--text34)}
+ html[data-theme] :is(input[type=checkbox],input[type=radio]){min-height:20px;width:20px;padding:0;accent-color:var(--accent34)}
+ html[data-theme] :is(select option,select optgroup){background:var(--field34);color:var(--text34)}
+ html[data-theme] :is(.btn,.production-toolbar button,.production-login button){background:var(--accent34);color:var(--on-accent34);border:1px solid var(--accent34);min-height:44px;box-shadow:none}
+ html[data-theme] :is(.btn.secondary,.close,.production-toolbar button,.switch button,.label-tools>button:not(.btn),.calendar-head button){background:var(--surface-alt34);color:var(--text34);border:1px solid var(--border34)}
+ html[data-theme] :is(.btn,.btn.secondary,.production-toolbar button):hover:not(:disabled){filter:brightness(.94)}
+ html[data-theme] :is(.switch button.on,.calendar-grid button.on,.calendar-grid button.selected,[data-calendar-day15].on,[data-cal-day].on){background:var(--accent34);color:var(--on-accent34);border-color:var(--accent34)}
+ html[data-theme] :is(button,input,select,textarea,summary,a):focus-visible{outline:3px solid var(--focus34);outline-offset:3px;box-shadow:none}
+ html[data-theme] :is(.shift-pick,.schedule-view-toggle3 button){background:var(--surface-alt34);color:var(--text34);border:1px solid var(--border34);min-height:44px}
+ html[data-theme] :is(.shift-pick.on,.schedule-view-toggle3 button.on){background:var(--accent34);color:var(--on-accent34);border-color:var(--accent34)}
+ html[data-theme] :is(.bed-staff-line3 small,.staff-legend3,#bed-label){color:var(--muted34)}
+ html[data-theme] .bed-staff-line3 b{color:var(--text34)}
+ html[data-theme] :is(.eyebrow,.assign-label3){color:var(--muted34)}
+ html[data-theme] .date-trigger{background:var(--field34);color:var(--text34);border:1px solid var(--border34);min-height:44px}
+ html[data-theme] .mini-row span{background:var(--surface-alt34);color:var(--text34);border-color:var(--line)}
+ html[data-theme] .close{min-width:44px;min-height:44px}
+ html[data-theme] .bed{background:var(--surface34);color:var(--text34);border-color:var(--border34)}
+ html[data-theme] .bed.taken{background:var(--surface-alt34);border:2px solid var(--accent34)}
+ html[data-theme] .bed b{color:var(--text34)}html[data-theme] .bed small{color:var(--muted34)}
+ html[data-theme] .bed:hover{background:var(--surface-alt34)}
+ html[data-theme] :is(.assignment-modal3,.calendar-pop,.modal){border-color:var(--border34)}
+ html[data-theme] .calendar-grid button{background:var(--surface34);color:var(--text34);border:1px solid var(--border34);min-height:40px}
+ html[data-theme] .calendar-grid :is(span,small){color:var(--muted34)}
+ html[data-theme] :is(.modalhead,.row){border-color:var(--line)}
+ html[data-theme=dark] .pill{background:#294152;color:#edf4fc}
+ html[data-theme=dark] .pill.blue{background:#163f62;color:#c3e3ff}
+ html[data-theme=dark] .pill.green{background:#154636;color:#bcf4d5}
+ html[data-theme=dark] .pill.amber{background:#503c17;color:#ffe3a1}
+ html[data-theme=dark] .pill.red{background:#54293a;color:#ffd0dd}
+ html[data-theme=light] .pill{background:#e8eef4;color:#3b5266}
+ html[data-theme=light] .pill.blue{background:#dfedff;color:#154c80}
+ html[data-theme=light] .pill.green{background:#dff3e8;color:#15513a}
+ html[data-theme=light] .pill.amber{background:#fff0cf;color:#6e4c0c}
+ html[data-theme=light] .pill.red{background:#fce5eb;color:#852f47}
+ html[data-theme] .label-error{color:#9a2640}html[data-theme=dark] .label-error{color:#ffb9c9}
+ html[data-theme] .production-gate{background:var(--bg);color:var(--text34)}
+ html[data-theme] :is(#attendance-rows26,#oncall-rows26,#quality-body24,#linen-stock21,#linen-history21,#records-list3) :is(th,td){color:var(--text34);border-color:var(--border34);background:var(--surface34)}
+ html[data-theme] :is(#linen-stock21,#oncall-rows26) th{background:var(--surface-alt34)}
+ .admission-form34 :is(fieldset,.admission-care34,.admission-optional26),.discharge-destination34{min-width:0;border:1px solid var(--line);border-radius:14px;padding:16px;margin:14px 0;background:var(--surface34)}
+ .admission-form34 legend,.discharge-destination34 legend{padding:0 8px;font-size:15px;font-weight:700;color:var(--text34)}
+ .admission-form34 .fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+ .admission-form34 .field.wide{grid-column:1/-1}
+ .admission-form34 .field label{display:block;font-size:13px}
+ .admission-form34 .field :is(input,select){display:block;width:100%;margin-top:6px}
+ .admission-form34 details>summary{font-size:15px;padding:8px 0}
+ .admission-actions34{display:flex;flex-wrap:wrap;gap:10px;position:sticky;bottom:0;padding:12px 0;background:var(--surface34);border-top:1px solid var(--line);z-index:2}
+ .admission-actions34 .btn{flex:1;min-width:130px}
+ .discharge-destination34 .fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .discharge-destination34 .wide{grid-column:1/-1}.discharge-destination34 input{width:100%}
+ .destination-preview34{padding:12px;border-radius:10px;background:var(--surface-alt34);color:var(--text34);font-weight:650;overflow-wrap:anywhere}
+ #discharge-form24>label{display:block;margin:12px 0;font-weight:600}#discharge-form24>label :is(input,select){display:block;width:100%;margin-top:6px}
+ @media(max-width:560px){body{padding:0}.app{border-radius:0!important;min-height:100vh}.top{padding:18px!important;flex-wrap:wrap;gap:10px}.brand b{font-size:21px}.production-toolbar{display:flex;flex-wrap:wrap;gap:8px;padding:10px}.production-toolbar button{flex:1;min-width:110px}.modal{padding:16px!important;max-height:94vh!important}.shade{padding:8px!important}.admission-form34 .fields{grid-template-columns:minmax(0,1fr)}.admission-form34 :is(fieldset,.admission-care34,.admission-optional26){padding:12px}.admission-form34 .field.wide{grid-column:auto}.admission-actions34 .btn{min-width:100px}}
+ @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+}
