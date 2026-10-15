@@ -1151,6 +1151,14 @@ function organizeClinical39(){
 }
 // Nursing fluid/RBS entries are admission-bound and are included exactly once in the selected print period.
 const printBefore39=kPrint;kPrint=async function(d){const p=active().find(p=>p.bed===kardexBed),start=new Date(kardexStart+'+03:00').getTime(),end=start+86400000,within=r=>{const ms=new Date(r.time+'+03:00').getTime();return ms>=start&&ms<end;};return printBefore39({...d,io:[...(d.io||[]),...careRows39(p||{},'io').filter(within)],obs:[...(d.obs||[]),...careRows39(p||{},'rbs').filter(within)].sort((a,b)=>a.time.localeCompare(b.time))});};
+const kardexViewBefore39=kardex6;kardex6=function(){
+ kardexViewBefore39();const p=active().find(p=>p.bed===kardexBed),d=kState();if(!p||!d)return;
+ const start=new Date(kardexStart+'+03:00').getTime(),within=r=>{const t=new Date(r.time+'+03:00').getTime();return t>=start&&t<start+86400000;},io=careRows39(p,'io').filter(within),rbs=careRows39(p,'rbs').filter(within);
+ const totals=kTotals({...d,io:[...d.io,...io]});document.querySelectorAll('#k-work>.stats .stat strong').forEach((el,i)=>el.textContent=kVal([totals.i,totals.o,totals.b][i]));
+ const section=document.createElement('section');section.className='section';section.innerHTML=`<h3>Nursing care · selected 24h</h3><p class="sub">These admission-bound entries are included in the totals above and printed Kardex. Correct them in Nursing care; earlier Kardex entries remain in their original tables.</p><div class="kardex-scroll"><table class="kardex-table"><thead><tr><th>Time · Riyadh</th><th>Intake / Output</th><th>Source</th><th>Measured mL</th></tr></thead><tbody>${io.map(r=>`<tr><td>${safe(r.time)}</td><td>${safe(r.kind)}</td><td>${safe(r.source)}</td><td>${safe(r.ml)}</td></tr>`).join('')||'<tr><td colspan="4">Not recorded in nursing workspace</td></tr>'}</tbody></table></div><div class="kardex-scroll">${kObsTable({obs:rbs})}</div><button class="btn secondary quick-nav21" id="open-nursing-kardex39">Open Nursing care</button>`;
+ document.querySelector('#k-work>.stats')?.after(section);section.querySelector('button').onclick=()=>{open(p);openCare39(p);};
+};
+
 const documentBefore39=kDocument7;kDocument7=function(p,d,start){const html=documentBefore39(p,d,start);return p.pressureSupport?html.replace('<td>Settings</td><td>','<td>Settings</td><td>PS '+safe(p.pressureSupport)+' cmH₂O · '):html;};
 const sheet39=document.createElement('link');sheet39.rel='stylesheet';sheet39.href='/care39.css';document.head.append(sheet39);
 
