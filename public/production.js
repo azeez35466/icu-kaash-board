@@ -1,3 +1,5 @@
+import {rememberConfig38,configuration38,saveSnapshot38,readSnapshot38,clearOffline38} from './offline38.js';
+let offline38=false;
 import {fitKardex36} from './kardex-layout36.js';
 import {organizeAdmission34,dischargeFields34,readDischargeDestination34,previewDischarge34,destinationLabel34} from './clinical-ui34.js';
 
@@ -23,6 +25,7 @@ async function loadConfiguration25(){
 
  if(!configurationRequest25)configurationRequest25=(async()=>{
 
+  if(!navigator.onLine){const cached=configuration38();if(cached)return config=cached;}
   const response=await fetch('/api/config',{cache:'no-store',signal:AbortSignal.timeout(15000)});
 
   const data=await readJSON20(response,'Configuration');
@@ -35,7 +38,7 @@ async function loadConfiguration25(){
 
   if(address.protocol!=='https:')throw Error('SUPABASE_URL must use HTTPS.');
 
-  config={...data,url:data.url.replace(/\/$/,'')};return config;
+  config={...data,url:data.url.replace(/\/$/,'')};try{rememberConfig38(config)}catch{}return config;
 
  })().finally(()=>{configurationRequest25=null});
 
@@ -57,7 +60,7 @@ function installBoard(data){boardExtras30=clone(data);staffingPolicy24=data.staf
 
 function status(message){cloudStatus.textContent=message}
 
-const canEdit=()=>['admin','doctor','charge_nurse'].includes(member?.role);
+const canEdit=()=>!offline38&&navigator.onLine&&['admin','doctor','charge_nurse'].includes(member?.role);
 
 async function sync(){
 
@@ -117,11 +120,11 @@ function queueSave(){if(session&&Date.now()>=sessionDeadline20){expireSession20(
 
 function installCloudPersistence(){savePreview3=queueSave;persist8=()=>{if(!canEdit()||saveBlocked)return false;queueSave();return true};kPersist=()=>{if(!canEdit()||saveBlocked)return false;queueSave();return true};}
 
-function installToolbar(){document.querySelectorAll('.production-toolbar').forEach(el=>el.remove());const bar=document.createElement('div');bar.className='production-toolbar';bar.innerHTML='<button id="retry-save20">Retry save</button><button id="cloud-reload">Reload latest board</button><button id="export-draft">Export unsaved draft</button><button id="sign-out">Sign out</button>';document.querySelector('.top').after(bar);document.getElementById('retry-save20').hidden=!canEdit();document.getElementById('retry-save20').onclick=()=>{if(conflictBlocked20){status('Revision conflict. Export your draft, then reload the current board.');return}saveBlocked=false;document.body.classList.remove('save-blocked');void sync()};document.getElementById('cloud-reload').onclick=()=>{if(canEdit()&&dirty20()){if(!confirm('Reloading discards unsaved changes. Export the draft first if needed. Reload now?'))return}location.reload()};document.getElementById('export-draft').onclick=()=>{const blob=new Blob([JSON.stringify(captureBoard(),null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='ICU_KAASH_unsaved_draft.json';a.click();URL.revokeObjectURL(url)};document.getElementById('sign-out').onclick=async()=>{if(canEdit()&&dirty20()){if(!confirm('Sign out with unsaved changes? Export your draft first if needed.'))return}try{await fetch(config.url+'/auth/v1/logout',{method:'POST',headers:authHeaders()})}finally{session=null;member=null;clearSession20();clearTimeout(saveTimer18);location.reload()}}}
+function installToolbar(){document.querySelectorAll('.production-toolbar').forEach(el=>el.remove());const bar=document.createElement('div');bar.className='production-toolbar';bar.innerHTML='<button id="retry-save20">Retry save</button><button id="cloud-reload">Reload latest board</button><button id="export-draft">Export unsaved draft</button><button id="sign-out">Sign out</button>';document.querySelector('.top').after(bar);installOfflineToolbar38(bar);document.getElementById('retry-save20').hidden=!canEdit();document.getElementById('retry-save20').onclick=()=>{if(conflictBlocked20){status('Revision conflict. Export your draft, then reload the current board.');return}saveBlocked=false;document.body.classList.remove('save-blocked');void sync()};document.getElementById('cloud-reload').onclick=()=>{if(dirty20()){if(!confirm('Reloading discards unsaved changes. Export the draft first if needed. Reload now?'))return}location.reload()};document.getElementById('export-draft').onclick=()=>{const blob=new Blob([JSON.stringify(captureBoard(),null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='ICU_KAASH_unsaved_draft.json';a.click();URL.revokeObjectURL(url)};document.getElementById('sign-out').onclick=async()=>{if(dirty20()){if(!confirm('Sign out with unsaved changes? Export your draft first if needed.'))return}try{await fetch(config.url+'/auth/v1/logout',{method:'POST',headers:authHeaders(),signal:AbortSignal.timeout(3000)})}finally{session=null;member=null;clearSession20();clearTimeout(saveTimer18);location.reload()}}}
 
 // Real patient data stay in memory; this runtime never saves them to localStorage.
 
-document.addEventListener('click',e=>{if(!session)return;const button=e.target.closest('#save,#save-unified8,#archive-discharge3');if(button&&selected&&(!selected.name?.trim()||!selected.mrn?.trim())){e.preventDefault();e.stopImmediatePropagation();alert('Patient name and MRN are required.')}if(!canEdit()&&e.target.closest('button,input,select,textarea')&&!e.target.closest('.top,.tabs,.production-toolbar,.production-gate')&&!e.target.closest('.tab')&&!e.target.closest('[data-open],.bed,#close,.switch,#open-unified8,#patient-kardex6,#unified-kardex8,.quick-nav21,#search21,#ward-shift24,#tools-shift24,#back-profile8,[data-workflow-open8],[data-record18],#record-search3,#records-prev18,#records-next18,#search11,[data-result-open11],[data-sched-view3],[data-shift3],[data-cal-open],[data-cal-move],[data-cal-day]')&&page!=='labels'){e.preventDefault();e.stopImmediatePropagation();status('This account has read-only access.')}},true);
+document.addEventListener('click',e=>{if(!session)return;const button=e.target.closest('#save,#save-unified8,#archive-discharge3');if(button&&selected&&(!selected.name?.trim()||!selected.mrn?.trim())){e.preventDefault();e.stopImmediatePropagation();alert('Patient name and MRN are required.')}if(!canEdit()&&e.target.closest('button,input,select,textarea')&&!e.target.closest('.top,.tabs,.production-toolbar,.production-gate')&&!e.target.closest('.tab')&&!e.target.closest('[data-open],.bed,#close,.switch,#open-unified8,#patient-kardex6,#unified-kardex8,.quick-nav21,#k-print,#k-patient,#k-start,#k-paper36,#search21,#ward-shift24,#tools-shift24,#back-profile8,[data-workflow-open8],[data-record18],#record-search3,#records-prev18,#records-next18,#search11,[data-result-open11],[data-sched-view3],[data-shift3],[data-cal-open],[data-cal-move],[data-cal-day]')&&page!=='labels'){e.preventDefault();e.stopImmediatePropagation();status('This account has read-only access.')}},true);
 
 window.addEventListener('beforeunload',e=>{if(session&&(formDraft24||dirty20())){e.preventDefault();e.returnValue=''}});
 
@@ -213,9 +216,9 @@ let sessionDeadline20=0,refreshPromise20=null,sessionTimer20,expiredDraft20=fals
 
 function storeSession20(){try{sessionStorage.setItem(SESSION_KEY20,JSON.stringify({url:config.url,unit:config.unitId,session,deadline:sessionDeadline20}))}catch{status('Session active; browser storage unavailable. Reload will require sign-in.')}}
 
-function clearSession20(){try{sessionStorage.removeItem(SESSION_KEY20)}catch{}clearTimeout(sessionTimer20)}
+function clearSession20(){void clearOffline38().catch(()=>{});try{sessionStorage.removeItem(SESSION_KEY20)}catch{}clearTimeout(sessionTimer20)}
 
-function dirty20(){if(member&&!canEdit())return false;return pending||saveBlocked||JSON.stringify(captureBoard())!==serverFingerprint}
+function dirty20(){if(member&&!['admin','doctor','charge_nurse'].includes(member.role))return false;return pending||saveBlocked||JSON.stringify(captureBoard())!==serverFingerprint}
 
 function exportDraft20(){const url=URL.createObjectURL(new Blob([JSON.stringify(captureBoard(),null,2)],{type:'application/json'}));const link=document.createElement('a');link.href=url;link.download='ICU_KAASH_unsaved_draft.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
 
@@ -246,6 +249,7 @@ async function authRequest(path,body){
 }
 
 async function refreshSession(){
+ if(offline38){if(Date.now()>=sessionDeadline20)expireSession20();return;}
 
  if(!session)throw Error('Sign in required');
 
@@ -272,6 +276,7 @@ async function refreshSession(){
 }
 
 async function rest(path,options={}){
+ if(offline38||!navigator.onLine)throw Error('Offline: viewing saved snapshot only. Reconnect to load current data.');
 
  const retryable=(options.method||'GET')==='GET'||['rpc/kaash_admission_report','rpc/kaash_care_quality_report','rpc/kaash_backup_manifest'].includes(path);
 
@@ -298,6 +303,14 @@ async function rest(path,options={}){
 }
 
 async function enterApp20(){
+ if(!navigator.onLine){
+  const snapshot=await readSnapshot38({user:session?.user?.id,unit:config.unitId,deadline:sessionDeadline20});
+  offline38=true;member={role:'offline_reader'};installBoard(snapshot.data);boardRevision=snapshot.revision;serverFingerprint=JSON.stringify(captureBoard());
+  installCloudPersistence();document.querySelector('.top').after(cloudStatus);document.body.classList.remove('auth-locked');document.body.classList.add('read-only');gate.remove();page='patients';render();installToolbar();armSession20();
+  status('OFFLINE · Read-only snapshot '+new Date(snapshot.savedAt).toLocaleString('en-GB')+' · revision '+boardRevision+' · Records and reports require internet');return;
+ }
+ offline38=false;
+
 
  const memberships=await rest('kaash_members?unit_id=eq.'+encodeURIComponent(config.unitId)+'&select=role');
 
@@ -1075,8 +1088,24 @@ kPrint=async function(d){
  let pageStyle=document.getElementById('label-page-size');if(!pageStyle){pageStyle=document.createElement('style');pageStyle.id='label-page-size';document.head.append(pageStyle);}
  pageStyle.textContent='@media print{@page{size:'+kardexPaper36+' landscape;margin:8mm}}';
  message.textContent='Two-page '+kardexPaper36+' Kardex ready. Empty fields are summarized as not recorded; repeated overview fields are shown once. Timed records are retained.';
- kPersist();window.print();
+ if(!offline38)kPersist();window.print();
 };
+function installOfflineToolbar38(bar){
+ const info=document.createElement('span');info.setAttribute('role','status');info.textContent=offline38?'OFFLINE · Saved snapshot · Read only':navigator.onLine?'ONLINE':'CONNECTION LOST · Reconnect before editing';bar.prepend(info);
+ const button=document.createElement('button');button.textContent=offline38?'Reconnect & reload':'Prepare offline viewing';bar.append(button);
+ button.onclick=async()=>{if(offline38){if(navigator.onLine)location.reload();else status('Internet is still unavailable.');return;}button.disabled=true;try{
+  if(!navigator.onLine||dirty20())throw Error('Connect and save all changes before preparing offline access.');
+  if(!('serviceWorker' in navigator))throw Error('This browser does not support offline viewing.');
+  const registration=await navigator.serviceWorker.register('/sw38.js');
+  await Promise.race([navigator.serviceWorker.ready,new Promise((_,reject)=>setTimeout(()=>reject(Error('Offline shell preparation timed out. Retry while connected.')),20000))]);
+  if(!registration.active)throw Error('Offline shell is still installing. Retry shortly.');
+  rememberConfig38(config);await saveSnapshot38({data:JSON.parse(serverFingerprint),revision:boardRevision,user:session.user.id,unit:config.unitId,deadline:sessionDeadline20,savedAt:Date.now()});
+  status('Offline snapshot ready · encrypted · this tab only · expires with your one-hour session. Re-prepare after changes.');
+ }catch(error){status(error.message)}finally{button.disabled=false;}};
+ if(offline38){bar.querySelector('#retry-save20').hidden=true;bar.querySelector('#export-draft').hidden=true;}
+}
+window.addEventListener('offline',()=>status('Connection lost · Do not edit. A prepared snapshot can be opened by reloading this tab. Unsaved changes must be exported first.'));
+window.addEventListener('online',()=>{if(offline38)status('Connection restored · Reconnect & reload to validate access and load current data. No offline edits are synchronized.');});
 void initializeSession20();;
 
 
