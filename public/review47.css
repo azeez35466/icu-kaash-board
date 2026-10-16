@@ -1,0 +1,16 @@
+@media screen{
+ html[data-theme] .patient-facts47{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0;padding:14px;background:var(--surface-alt34);border-radius:9px;color:var(--text34)}
+ .patient-facts47 span{overflow-wrap:anywhere;font-size:14px}.patient-facts47 small{display:block;font-size:12px;color:var(--muted34);margin-bottom:4px}
+ html[data-theme] .mini-row,html[data-theme] .mini-row span,html[data-theme] .mini-row b{background:var(--surface-alt34);color:var(--text34);border-color:var(--border34);font-size:12px;white-space:normal;overflow-wrap:anywhere;min-width:0}
+ html[data-theme] .mini-row{padding:9px;gap:9px;align-items:start}html[data-theme] .mini-row b{color:var(--text34)}
+ html[data-theme] :is(.schedule-table,.schedule-table td,.schedule-table th,.shift-table24 td,.shift-table24 th,.procedure-card,.line-list,.catalog-results button,.field-value,.date-trigger,.calendar-pop,.calendar-grid button,.calendar-head button){background:var(--surface34);color:var(--text34);border-color:var(--line)}
+ html[data-theme] :is(.schedule-table th,.field-value,.date-trigger,.calendar-head button){background:var(--surface-alt34)}
+ html[data-theme] :is(.catalog-results button:hover,.calendar-grid button:hover){background:var(--surface-alt34);color:var(--text34)}
+ html[data-theme] :is(.mini-assign,.schedule-patient,.bed-staff-line3 small,.schedule-bed,.bed-staff-line3 b,.staff-legend3,.calendar-grid span){color:var(--muted34)}
+ html[data-theme] :is(.bed-assignment-card3,.duty-card3,.assignment-modal3,.care-history39 .card){background:var(--surface34);color:var(--text34);border-color:var(--line)}
+ html[data-theme] .pill.red{background:#531d2a;color:#ffbcc8;border:1px solid #df8da0}html[data-theme=light] .pill.red{background:#ffe4e9;color:#9e1631;border-color:#d87c91}
+ html[data-theme] .admission-group47{margin:14px 0;padding:16px;min-width:0}.admission-group47 legend{padding:0 7px;color:var(--text34);font-weight:700}
+ html[data-theme] .admission-form34 .admission-actions34{position:static;background:var(--surface34);padding:12px 0;box-shadow:none}
+ html[data-theme] .care-nav39{display:flex;gap:7px;flex-wrap:wrap}.care-nav39 button{min-height:44px}
+ @media(max-width:600px){.patient-facts47{grid-template-columns:repeat(2,minmax(0,1fr))!important}.hospital-screen40{overflow:auto}.hospital-screen40 .tv-layout40{display:block}.hospital-screen40 .tv-beds40{grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:auto}.hospital-screen40>header{align-items:flex-start}.hospital-screen40 header>div:last-child{display:block}.hospital-screen40 aside{margin-top:14px}.mini-row{grid-template-columns:60px minmax(0,1fr)!important}.mini-row span:last-child{grid-column:2}}
+}

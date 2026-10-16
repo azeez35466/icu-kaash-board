@@ -1,3 +1,5 @@
+import {installAdmission43} from './admission43.js';
+let nursingReady47=false;
 import {installDutyPicker40,installTV40} from './display40.js';
 import {renderCare39,applyCare39,dashboard39,ventilation39,careRows39} from './care39.js';
 let nursingReady39=false;
@@ -181,7 +183,7 @@ medicalRecords3=function(){
 
    rows=result.slice(0,50);const last=rows.at(-1);nextCursor=result.length>50?{at:last.archived_at,key:last.admission_key}:null;
 
-   document.getElementById('records-list3').innerHTML=rows.map(({data:p},i)=>`<article class="card"><div class="label">${safe(p.bed)} · ${safe(p.status||'Discharged')}</div><h3>${safe(p.name)}</h3><p class="meta">MRN ${safe(p.mrn)} · Admitted ${safe(p.doa||'—')} · Discharged ${safe(p.dischargedAt||'—')}</p>${destinationLabel34(p)?`<p class="destination-preview34">Discharged to: ${safe(destinationLabel34(p))}</p>`:''}<p>${safe(p.diagnosis||'')}</p><button class="btn secondary" data-record18="${i}">Open record</button></article>`).join('')||'<p>No matching records.</p>';
+   document.getElementById('records-list3').innerHTML=rows.map(({data:p},i)=>`<article class="card"><div class="label">${safe(p.bed)} · ${safe(p.status||'Discharged')}</div><h3>${safe(p.name)}</h3><span class="meta">Patient status: ${safe(p.patientStatus||'Not documented')}</span><p class="meta">MRN ${safe(p.mrn)} · Admitted ${safe(p.doa||'—')} · Discharged ${safe(p.dischargedAt||'—')}</p>${destinationLabel34(p)?`<p class="destination-preview34">Discharged to: ${safe(destinationLabel34(p))}</p>`:''}<p>${safe(p.diagnosis||'')}</p><button class="btn secondary" data-record18="${i}">Open record</button></article>`).join('')||'<p>No matching records.</p>';
 
    document.querySelectorAll('[data-record18]').forEach(button=>button.onclick=()=>{
 
@@ -317,7 +319,7 @@ async function enterApp20(){
 
  const memberships=await rest('kaash_members?unit_id=eq.'+encodeURIComponent(config.unitId)+'&select=role');
 
- if(!Array.isArray(memberships)||!memberships[0]?.role||memberships[0].role==='print_agent')throw Error('No application membership for this unit.');member=memberships[0];nursingReady39=false;if(member.role==='nurse'){try{nursingReady39=await rest('rpc/kaash_nursing_access39',{method:'POST',body:JSON.stringify({p_unit:config.unitId})})===true}catch{}}
+ if(!Array.isArray(memberships)||!memberships[0]?.role||memberships[0].role==='print_agent')throw Error('No application membership for this unit.');member=memberships[0];nursingReady47=false;if(member.role==='nurse'){try{nursingReady47=await rest('rpc/kaash_nursing_access47',{method:'POST',body:JSON.stringify({p_unit:config.unitId})})===true}catch{}}nursingReady39=false;if(member.role==='nurse'){try{nursingReady39=await rest('rpc/kaash_nursing_access39',{method:'POST',body:JSON.stringify({p_unit:config.unitId})})===true}catch{}}
 
  const rows=await rest('kaash_boards?unit_id=eq.'+encodeURIComponent(config.unitId)+'&select=data,revision');if(!Array.isArray(rows)||!rows[0]?.data)throw Error('Unit board is not initialized.');
 
@@ -543,7 +545,7 @@ patientList=function(){
 
   const query=englishDigits26(document.getElementById('search21').value).trim().toLowerCase(),rows=active().filter(p=>[p.name,p.mrn,p.bed,p.diagnosis].some(value=>String(value||'').toLowerCase().includes(query))).sort((a,b)=>a.bed.localeCompare(b.bed));
 
-  document.getElementById('list21').innerHTML=rows.map(p=>`<article class="card"><div class="toprow"><div><div class="label">${safe(p.bed)} · MRN ${safe(p.mrn)}</div><h3>${safe(p.name)}</h3></div>${pill(p.code||'Not documented',p.code==='DNR'?'red':'')}</div><p>${safe(p.diagnosis||'Diagnosis not documented')}</p><div>${p.precautions&&p.precautions!=='Standard'?pill(p.precautions,'amber'):''}</div><p class="meta">Admission ${safe(p.doa||'—')} · Pending tasks ${(p.tasks||[]).filter(task=>task.status!=='Completed').length}</p>${dashboard39(p)}<button class="btn secondary" data-open="${safe(p.bed)}">View patient</button>${canEdit()?`<details class="section"><summary>Transfer bed</summary><select data-destination21="${safe(p.bed)}"><option value="">Choose available bed</option>${groups.flatMap(group=>group.ids).filter(bed=>bed!==p.bed&&!active().some(patient=>patient.bed===bed)).map(bed=>`<option>${safe(bed)}</option>`).join('')}</select><input data-transfer-by21="${safe(p.bed)}" placeholder="Staff / initials"><button class="btn secondary" data-transfer21="${safe(p.bed)}">Transfer</button></details>`:''}</article>`).join('')||'<section class="section">No matching patients. Select an available bed in Census to admit a patient.</section>';
+  document.getElementById('list21').innerHTML=rows.map(p=>`<article class="card"><div class="toprow"><div><div class="label">${safe(p.bed)} · MRN ${safe(p.mrn)}</div><h3>${safe(p.name)}</h3></div>${pill(p.code||'Not documented',p.code==='DNR'?'red':'')}</div><p>${safe(p.diagnosis||'Diagnosis not documented')}</p><div>${p.oxygen?pill(p.oxygen,'blue'):''}${p.precautions&&p.precautions!=='Standard'?pill(p.precautions,'amber'):''}</div><div class="patient-facts47"><span><small>Age</small>${safe(p.age||'Not documented')}</span><span><small>Nationality</small>${safe(p.nationality||'Not documented')}</span><span><small>Gender</small>${safe(p.gender||'Not documented')}</span><span><small>Admission</small>${safe(p.doa||'Not documented')}</span><span><small>Length of stay</small>${safe(losDays3(p.doa))}</span><span><small>Precautions</small>${safe(p.precautions||'Not documented')}</span></div><p class="meta">Admission ${safe(p.doa||'—')} · Pending tasks ${(p.tasks||[]).filter(task=>task.status!=='Completed').length}</p><button class="btn secondary" data-open="${safe(p.bed)}">View patient</button>${canEdit()?`<details class="section"><summary>Transfer bed</summary><select data-destination21="${safe(p.bed)}"><option value="">Choose available bed</option>${groups.flatMap(group=>group.ids).filter(bed=>bed!==p.bed&&!active().some(patient=>patient.bed===bed)).map(bed=>`<option>${safe(bed)}</option>`).join('')}</select><input data-transfer-by21="${safe(p.bed)}" placeholder="Staff / initials"><button class="btn secondary" data-transfer21="${safe(p.bed)}">Transfer</button></details>`:''}</article>`).join('')||'<section class="section">No matching patients. Select an available bed in Census to admit a patient.</section>';
 
   document.querySelectorAll('[data-open]').forEach(button=>button.onclick=()=>open(active().find(p=>p.bed===button.dataset.open)));
 
@@ -1114,21 +1116,17 @@ async function saveCare39(patient,key,rows){
  if(!canCare39()||patient.status)throw Error('Online nursing editing permission is required.');
  if(dirty20())throw Error('Save existing changes first.');
  if(canEdit()){applyCare39(patient,key,rows);await sync();if(saveBlocked)throw Error('Database save failed. Keep this page open and retry.');return;}
- const result=await rest('rpc/kaash_save_nursing_care39',{method:'POST',body:JSON.stringify({p_unit:config.unitId,p_admission:patient.admissionId,p_revision:boardRevision,p_section:key,p_rows:rows})});
+ if(['skin','procedures'].includes(key)&&!nursingReady47)throw Error('The skin / radiology permission update is not installed yet.');
+ const result=await rest('rpc/'+(nursingReady47?'kaash_save_nursing_care47':'kaash_save_nursing_care39'),{method:'POST',body:JSON.stringify({p_unit:config.unitId,p_admission:patient.admissionId,p_revision:boardRevision,p_section:key,p_rows:rows})});
  if(!result?.data||!Number.isInteger(result.revision))throw Error('Save was not confirmed.');
  installBoard(result.data);boardRevision=result.revision;serverFingerprint=JSON.stringify(captureBoard());const current=patients.find(p=>p.admissionId===patient.admissionId);Object.assign(patient,clone(current));selected=patient;status('Saved to Supabase · nursing care · revision '+boardRevision);
 }
 function openCare39(p){
  if(!p)return;const fields=document.getElementById('patient-fields');fields.classList.add('nursing-care39');
- renderCare39(fields,p,{editable:canCare39()&&!p.status,onDraft:value=>{formDraft24=value;},save:(key,rows)=>saveCare39(p,key,rows),openKardex:()=>{document.getElementById('shade').classList.remove('show');kardexBed=p.bed;page='kardex';render();}});
-}
-function conditionalProfile39(fields){
- const oxygen=fields.querySelector('[data-key="oxygen"]');if(!oxygen)return;
- const update=()=>{const show=ventilation39({oxygen:oxygen.value,airway:fields.querySelector('[data-key="airway"]')?.value});for(const key of ['ventMode','fio2','peep','tidalVolume','respiratoryRate']){const el=fields.querySelector('[data-key="'+key+'"]');if(el)el.closest('.field').hidden=!show;}};
- oxygen.addEventListener('change',update);fields.querySelector('[data-key="airway"]')?.addEventListener('change',update);update();
+ renderCare39(fields,p,{editable:key=>canCare39()&&!p.status&&(!['skin','procedures'].includes(key)||canEdit()||nursingReady47),save:(key,rows)=>saveCare39(p,key,rows),openKardex:()=>{document.getElementById('shade').classList.remove('show');kardexBed=p.bed;page='kardex';render();}});
 }
 function mountCare39(){
- const fields=document.getElementById('patient-fields');if(!fields||!selected)return;conditionalProfile39(fields);fields.classList.remove('nursing-care39');
+ const fields=document.getElementById('patient-fields');if(!fields||!selected)return;fields.classList.remove('nursing-care39');
  const quick=document.getElementById('quick-care21');if(quick){quick.textContent='Nursing care · fluids, tubes, infusions & blood';quick.onclick=()=>openCare39(selected);const full=document.createElement('button');full.className='btn secondary quick-nav21';full.id='full-care39';full.textContent='Assessments, orders & handover';full.onclick=()=>{patientView21='advanced';patientUnified8();};quick.after(full);}
  const record=document.getElementById('unified-kardex8');if(record&&!document.getElementById('nursing-open39')){const b=document.createElement('button');b.id='nursing-open39';b.className='btn secondary quick-nav21';b.textContent='Nursing care workspace';b.onclick=()=>openCare39(selected);record.after(b);}
  const form=document.getElementById('quick-admission21');if(form&&!form.querySelector('.vent39')){
@@ -1152,20 +1150,23 @@ function organizeClinical39(){
 }
 // Nursing fluid/RBS entries are admission-bound and are included exactly once in the selected print period.
 const printBefore39=kPrint;kPrint=async function(d){const p=active().find(p=>p.bed===kardexBed),start=new Date(kardexStart+'+03:00').getTime(),end=start+86400000,within=r=>{const ms=new Date(r.time+'+03:00').getTime();return ms>=start&&ms<end;};return printBefore39({...d,io:[...(d.io||[]),...careRows39(p||{},'io').filter(within)],obs:[...(d.obs||[]),...careRows39(p||{},'rbs').filter(within)].sort((a,b)=>a.time.localeCompare(b.time))});};
-const kardexViewBefore39=kardex6;kardex6=function(){
- kardexViewBefore39();const p=active().find(p=>p.bed===kardexBed),d=kState();if(!p||!d)return;
- const start=new Date(kardexStart+'+03:00').getTime(),within=r=>{const t=new Date(r.time+'+03:00').getTime();return t>=start&&t<start+86400000;},io=careRows39(p,'io').filter(within),rbs=careRows39(p,'rbs').filter(within);
- const totals=kTotals({...d,io:[...d.io,...io]});document.querySelectorAll('#k-work>.stats .stat strong').forEach((el,i)=>el.textContent=kVal([totals.i,totals.o,totals.b][i]));
- const section=document.createElement('section');section.className='section';section.innerHTML=`<h3>Nursing care · selected 24h</h3><p class="sub">These admission-bound entries are included in the totals above and printed Kardex. Correct them in Nursing care; earlier Kardex entries remain in their original tables.</p><div class="kardex-scroll"><table class="kardex-table"><thead><tr><th>Time · Riyadh</th><th>Intake / Output</th><th>Source</th><th>Measured mL</th></tr></thead><tbody>${io.map(r=>`<tr><td>${safe(r.time)}</td><td>${safe(r.kind)}</td><td>${safe(r.source)}</td><td>${safe(r.ml)}</td></tr>`).join('')||'<tr><td colspan="4">Not recorded in nursing workspace</td></tr>'}</tbody></table></div><div class="kardex-scroll">${kObsTable({obs:rbs})}</div><button class="btn secondary quick-nav21" id="open-nursing-kardex39">Open Nursing care</button>`;
- document.querySelector('#k-work>.stats')?.after(section);section.querySelector('button').onclick=()=>{open(p);openCare39(p);};
-};
-
 const documentBefore39=kDocument7;kDocument7=function(p,d,start){const html=documentBefore39(p,d,start);return p.pressureSupport?html.replace('<td>Settings</td><td>','<td>Settings</td><td>PS '+safe(p.pressureSupport)+' cmH₂O · '):html;};
 const sheet39=document.createElement('link');sheet39.rel='stylesheet';sheet39.href='/care39.css';document.head.append(sheet39);
 
 
 const teamBefore40=team;team=function(){teamBefore40();installDutyPicker40(main,canEdit());installTV40(main,()=>({groups,rn:shiftRNs[currentShift3]||{},pct:shiftPCTs[currentShift3]||{},duties:{...Object.fromEntries([...shiftDutyTypes3,'Other duty'].map(task=>[task,''])),...shiftDuties3[currentShift3]},shift:currentShift3,date:scheduleDate3}));};
 const displaySheet40=document.createElement('link');displaySheet40.rel='stylesheet';displaySheet40.href='/display40.css';document.head.append(displaySheet40);
+
+patientTabs21=function(){document.querySelector('#shade .switch').innerHTML=[['summary','Overview'],['admission','Admission'],['nursing','Nursing care']].map(([view,label])=>`<button type="button" class="quick-nav21 ${patientView21===view?'on':''}" data-quick21="${view}">${label}</button>`).join('');document.querySelectorAll('[data-quick21]').forEach(b=>b.onclick=()=>{patientView21=b.dataset.quick21;detailMode='profile';detail();});};
+const careBefore47=openCare39;openCare39=function(p){patientView21='nursing';patientTabs21();careBefore47(p);};
+const detailBefore47=detail;detail=function(){
+ if(patientView21==='nursing'){patientView21='summary';detailBefore47();openCare39(selected);return;}
+ detailBefore47();const form=document.getElementById('quick-admission21');if(form){installAdmission43(form,selected,{patients:active,editable:canEdit(),commit:(p,patch)=>{Object.assign(p,patch);queueSave();}});for(const d of [...form.querySelectorAll('details')]){const box=document.createElement('fieldset');box.className='section admission-group47';const legend=document.createElement('legend');legend.textContent=d.querySelector(':scope>summary')?.textContent||'Admission';box.append(legend);for(const child of [...d.children])if(child.tagName!=='SUMMARY')box.append(child);d.replaceWith(box);}}
+};
+const censusBefore47=census;census=function(){censusBefore47();const report=main.querySelector('#admission-report22');if(report)main.append(report);};
+const documentBefore47=kDocument7;kDocument7=function(p,d,start){const last=careRows39(p,'skin').slice().sort((a,b)=>String(b.time).localeCompare(String(a.time)))[0];return documentBefore47(last?{...p,piStage:last.stage,pi:[last.site,last.note,'Assessed '+last.time,'By '+last.by].filter(Boolean).join(' · ')}:p,d,start);};
+const reviewSheet47=document.createElement('link');reviewSheet47.rel='stylesheet';reviewSheet47.href='/review47.css';document.head.append(reviewSheet47);
+
 void initializeSession20();;
 
 
