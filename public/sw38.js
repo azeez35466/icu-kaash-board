@@ -1,4 +1,4 @@
-const CACHE='kaash-shell47';
+const CACHE='kaash-shell48';
 const ASSETS=["/", "/index.html", "/production.js", "/offline38.js", "/care39.js", "/infusion42.js", "/admission43.js", "/care39.css", "/review47.css", "/display40.js", "/display40.css", "/backup-tools.js", "/clinical-ui34.js", "/concurrency30.js", "/employee-login.js", "/workflow26.js", "/kardex-layout36.js", "/kardex-layout36.css", "/kardex-print35.css", "/theme34.css", "/manifest.webmanifest", "/taif-logo.jpg"];
 self.addEventListener('install',event=>event.waitUntil((async()=>{const cache=await caches.open(CACHE);await cache.addAll(ASSETS.map(path=>new Request(path,{cache:'reload'})));await self.skipWaiting();})()));
 self.addEventListener('activate',event=>event.waitUntil((async()=>{for(const name of await caches.keys())if(name.startsWith('kaash-shell')&&name!==CACHE)await caches.delete(name);await self.clients.claim();})()));
