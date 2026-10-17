@@ -15,10 +15,25 @@ $('sa-note-btn').onclick=()=>{collect();$('sa-note').textContent=note()};
 $('sa-draft').onclick=()=>{collect();try{localStorage.setItem('icu-kaash-admission-draft-'+data.bed,JSON.stringify({data,devices}));$('sa-message').textContent='Draft stored in this browser only. Use demo data until approved clinical storage is configured.'}catch{$('sa-message').textContent='Draft storage failed.'}};
 $('sa-confirm').onclick=()=>{collect();if(!data.mrn?.trim()||!data.name?.trim()||!data.diagnosis?.trim()){$('sa-message').textContent='Complete MRN, patient name and diagnosis.';return}if(!current||data.bed!==current.bed){$('sa-message').textContent='Select the correct bed from the census first.';return}
 const clean={...data};delete clean.profile;delete clean.respiratorySupport;delete clean.bed;
-const old={...current};Object.assign(current,clean);current.oxygen=data.respiratorySupport||current.oxygen;current.lines=devices.map(d=>({...d}));current.receivingNoteDraft=note();
-try{if(typeof persist8==='function'){if(persist8()===false)throw Error('Save failed')}else if(typeof savePreview3==='function')savePreview3();else throw Error('No save function');overlay.classList.remove('open');if(typeof render==='function')render()}catch{Object.assign(current,old);$('sa-message').textContent='Unable to save. No admission confirmed.'}};
+const old={...current};const wasListed=patients.includes(current);if(!wasListed)patients.push(current);Object.assign(current,clean);current.oxygen=data.respiratorySupport||current.oxygen;current.lines=devices.map(d=>({...d}));current.receivingNoteDraft=note();
+try{if(typeof persist8==='function'){if(persist8()===false)throw Error('Save failed')}else if(typeof savePreview3==='function')savePreview3();else throw Error('No save function');overlay.classList.remove('open');if(typeof render==='function')render()}catch{Object.assign(current,old);if(!wasListed){const index=patients.indexOf(current);if(index>=0)patients.splice(index,1)}$('sa-message').textContent='Unable to save. No admission confirmed.'}};
 }
 function open(){if(typeof selected==='undefined'||!selected)return;current=selected;data={...selected,profile:'General ICU',respiratorySupport:['Room Air','Oxygen Therapy','Mechanical Ventilation'].includes(selected.oxygen)?selected.oxygen:''};devices=Array.isArray(selected.lines)?selected.lines.map(d=>({...d})):[];paint();overlay.classList.add('open')}
 $('sa-close').onclick=()=>overlay.classList.remove('open');overlay.onclick=e=>{if(e.target===overlay)overlay.classList.remove('open')};
+
+const launch=document.createElement('div');launch.id='sa-launch';launch.style.cssText='position:fixed;bottom:20px;right:20px;z-index:9000;display:flex;gap:6px;align-items:center;background:white;padding:7px;border-radius:12px;box-shadow:0 4px 20px #1234';
+launch.innerHTML='<select id="sa-bed-select" aria-label="Select bed" style="padding:9px;border:1px solid #cbd5e1;border-radius:8px;max-width:130px"></select><button id="sa-launch-btn" class="btn" type="button">+ New Admission</button>';
+document.body.append(launch);
+const bedSelect=document.getElementById('sa-bed-select');
+if(typeof groups!=='undefined')bedSelect.innerHTML=groups.flatMap(g=>g.ids).map(b=>'<option value="'+esc(b)+'">'+esc(b)+'</option>').join('');
+document.getElementById('sa-launch-btn').onclick=()=>{
+const bed=bedSelect.value;if(!bed){alert('Select a bed first.');return}
+const existing=patients.find(p=>p.bed===bed);
+if(existing&&existing.name&&!confirm('Bed '+bed+' has an existing patient. Open their admission for editing?'))return;
+const p=existing||blank(bed,groups.find(g=>g.ids.includes(bed))?.name||'ICU');
+current=p;data={...p,profile:'General ICU',respiratorySupport:['Room Air','Oxygen Therapy','Mechanical Ventilation'].includes(p.oxygen)?p.oxygen:''};
+devices=Array.isArray(p.lines)?p.lines.map(d=>({...d})):[];paint();overlay.classList.add('open');
+};
+
 if(typeof detail==='function'){const prior=detail;detail=function(){prior();if(detailMode!=='profile')return;const root=document.getElementById('patient-fields');if(!root)return;const btn=document.createElement('button');btn.className='btn';btn.textContent='✨ Smart Admission';btn.onclick=open;root.prepend(btn)}}
 })();
