@@ -46,19 +46,5 @@ try{if(typeof persist8==='function'){if(persist8()===false)throw Error('Save fai
 function open(){if(typeof selected==='undefined'||!selected)return;current=selected;data={...selected,profile:'General ICU',respiratorySupport:['Room Air','Oxygen Therapy','Mechanical Ventilation'].includes(selected.oxygen)?selected.oxygen:''};devices=Array.isArray(selected.lines)?selected.lines.map(d=>({...d})):[];paint();overlay.classList.add('open')}
 $('sa-close').onclick=()=>overlay.classList.remove('open');overlay.onclick=e=>{if(e.target===overlay)overlay.classList.remove('open')};
 
-const launch=document.createElement('div');launch.id='sa-launch';launch.style.cssText='position:fixed;bottom:20px;right:20px;z-index:9000;display:flex;gap:6px;align-items:center;background:white;padding:7px;border-radius:12px;box-shadow:0 4px 20px #1234';
-launch.innerHTML='<select id="sa-bed-select" aria-label="Select bed" style="padding:9px;border:1px solid #cbd5e1;border-radius:8px;max-width:130px"></select><button id="sa-launch-btn" class="btn" type="button">+ New Admission</button>';
-document.body.append(launch);
-const bedSelect=document.getElementById('sa-bed-select');
-if(typeof groups!=='undefined')bedSelect.innerHTML=groups.flatMap(g=>g.ids).map(b=>'<option value="'+esc(b)+'">'+esc(b)+'</option>').join('');
-document.getElementById('sa-launch-btn').onclick=()=>{
-const bed=bedSelect.value;if(!bed){alert('Select a bed first.');return}
-const existing=patients.find(p=>p.bed===bed);
-if(existing&&existing.name&&!confirm('Bed '+bed+' has an existing patient. Open their admission for editing?'))return;
-const p=existing||blank(bed,groups.find(g=>g.ids.includes(bed))?.name||'ICU');
-current=p;data={...p,profile:'General ICU',respiratorySupport:['Room Air','Oxygen Therapy','Mechanical Ventilation'].includes(p.oxygen)?p.oxygen:''};
-devices=Array.isArray(p.lines)?p.lines.map(d=>({...d})):[];extraEntries=Array.isArray(p.extraAdmissionEntries)?p.extraAdmissionEntries.map(e=>({...e})):[];paint();overlay.classList.add('open');
-};
-
 if(typeof detail==='function'){const prior=detail;detail=function(){prior();if(detailMode!=='profile')return;const root=document.getElementById('patient-fields');if(!root)return;const btn=document.createElement('button');btn.className='btn';btn.textContent='✨ Smart Admission';btn.onclick=open;root.prepend(btn)}}
 })();
