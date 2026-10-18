@@ -507,25 +507,39 @@ detail=function(){
 patientUnified8=function(){originalUnified21();const container=document.getElementById('patient-fields');[...container.children].filter(section=>section.tagName==='SECTION').forEach((section,index)=>{if(index===0)return;const heading=section.querySelector('h3');if(!heading)return;const details=document.createElement('details');details.className='section';const summary=document.createElement('summary');summary.textContent=heading.textContent;heading.remove();details.append(summary);while(section.firstChild)details.append(section.firstChild);section.replaceWith(details)});applyReadOnly20()};
 
 patientList=function(){
-
- main.innerHTML='<h2 class="title">Patient list</h2><p class="sub">Bed, identity and current care at a glance. Expand respiratory support, contraptions or infusions for details.</p><input class="search" id="search21" placeholder="Search name, MRN, bed or diagnosis"><div id="list21"></div>';
-
+ const style=document.getElementById('pl-details-style21')||document.head.appendChild(Object.assign(document.createElement('style'),{id:'pl-details-style21',textContent:'.pl-details21{margin:9px 0;border-top:1px solid #edf1f6;padding-top:7px}.pl-details21>summary{cursor:pointer;color:#2869dc;font-size:10px;font-weight:800;padding:5px 0}.pl-grid21{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:7px}.pl-group21{background:#f7f9fc;border-radius:10px;padding:9px;overflow-wrap:anywhere}.pl-group21 h4{font-size:9px;margin:0 0 5px;color:#45617f}.pl-item21{font-size:9px;line-height:1.45;padding:4px 0;border-top:1px solid #e9eef5}.pl-item21 b{display:block;color:#6c7e94;font-size:8px}.pl-row21{font-size:9px;padding:5px 0;border-top:1px solid #e9eef5}.pl-row21:first-child{border-top:0}@media(max-width:390px){.pl-grid21{grid-template-columns:1fr}}'}));
+ main.innerHTML='<h2 class="title">Patient list</h2><p class="sub">Patient identity and current care at a glance. Open clinical details for respiratory support, lines, infusions and investigations.</p><input class="search" id="search21" placeholder="Search name, MRN, bed or diagnosis"><div id="list21"></div>';
+ const val=x=>Array.isArray(x)?x.filter(Boolean).join(', '):String(x??'').trim();
+ const item=(label,x)=>val(x)?'<div class="pl-item21"><b>'+safe(label)+'</b>'+safe(val(x))+'</div>':'';
+ const group=(name,parts)=>{const body=parts.filter(Boolean).join('');return body?'<section class="pl-group21"><h4>'+safe(name)+'</h4>'+body+'</section>':''};
  const paint=()=>{
-
   if(page!=='patients'||!document.getElementById('search21'))return;
-
-  const query=englishDigits26(document.getElementById('search21').value).trim().toLowerCase(),rows=active().filter(p=>[p.name,p.mrn,p.bed,p.diagnosis].some(value=>String(value||'').toLowerCase().includes(query))).sort((a,b)=>a.bed.localeCompare(b.bed));
-
-  document.getElementById('list21').innerHTML=rows.map(p=>`<article class="card"><div class="toprow"><div><div class="label">${safe(p.bed)} · MRN ${safe(p.mrn)}</div><h3>${safe(p.name)}</h3></div>${pill(p.code||'Not documented',p.code==='DNR'?'red':'')}</div><p>${safe(p.diagnosis||'Diagnosis not documented')}</p><div>${p.oxygen?pill(p.oxygen,'blue'):''}${p.precautions&&p.precautions!=='Standard'?pill(p.precautions,'amber'):''}</div><div class="patient-facts47"><span><small>Age</small>${safe(p.age||'Not documented')}</span><span><small>Nationality</small>${safe(p.nationality||'Not documented')}</span><span><small>Gender</small>${safe(p.gender||'Not documented')}</span><span><small>Admission</small>${safe(p.doa||'Not documented')}</span><span><small>Length of stay</small>${safe(losDays3(p.doa))}</span><span><small>Precautions</small>${safe(p.precautions||'Not documented')}</span></div><p class="meta">Admission ${safe(p.doa||'—')} · Pending tasks ${(p.tasks||[]).filter(task=>task.status!=='Completed').length}</p><button class="btn secondary" data-open="${safe(p.bed)}">View patient</button>${canEdit()?`<details class="section"><summary>Transfer bed</summary><select data-destination21="${safe(p.bed)}"><option value="">Choose available bed</option>${groups.flatMap(group=>group.ids).filter(bed=>bed!==p.bed&&!active().some(patient=>patient.bed===bed)).map(bed=>`<option>${safe(bed)}</option>`).join('')}</select><input data-transfer-by21="${safe(p.bed)}" placeholder="Staff / initials"><button class="btn secondary" data-transfer21="${safe(p.bed)}">Transfer</button></details>`:''}</article>`).join('')||'<section class="section">No matching patients. Select an available bed in Census to admit a patient.</section>';
-
+  const query=englishDigits26(document.getElementById('search21').value).trim().toLowerCase();
+  const rows=active().filter(p=>JSON.stringify(p).toLowerCase().includes(query)).sort((x,y)=>String(x.bed||'').localeCompare(String(y.bed||'')));
+  document.getElementById('list21').innerHTML=rows.map(p=>{
+   const lines=(p.lines||[]).filter(x=>!['Removed','Stopped'].includes(x.stage));
+   const therapies=(p.therapies||[]).filter(x=>!['Stopped','Completed','Discontinued'].includes(x.status));
+   const services=Array.isArray(p.admissionServices)?p.admissionServices:[];
+   const vent=[p.ventMode,p.fio2?'FiO₂ '+p.fio2+'%':'',p.peep?'PEEP '+p.peep:'',p.tidalVolume?'VT '+p.tidalVolume+' mL':'',p.inspiratoryPressure?'Pressure '+p.inspiratoryPressure:'',p.ventRR?'Rate '+p.ventRR:'',p.pressureSupport?'PS '+p.pressureSupport:''].filter(Boolean).join(' · ');
+   const rowsFor=(xs,label)=>xs.map(x=>'<div class="pl-row21"><b>'+safe(x.name||x.medication||x.type||label)+'</b>'+[x.site,x.size,x.stage,x.concentration,x.rate,x.access,x.status,x.details,x.result,x.at].filter(Boolean).map(safe).join(' · ')+'</div>').join('');
+   const admission=[p.doa,p.toa].filter(Boolean).join(' · ')||p.admissionAt||'Not documented';
+   const pending=(p.tasks||[]).filter(x=>x.status!=='Completed').length;
+   const info=[
+    group('Identity & admission',[item('Age',p.age),item('Gender',p.gender),item('Nationality',p.nationality),item('Admission',admission),item('Length of stay',losDays3(p.doa)),item('Admission source',p.admissionSource)]),
+    group('Respiratory support',[item('Support / airway',p.oxygen),item('Ventilator settings',vent),item('Oxygen details',p.oxygenDetails||p.oxygenFlow)]),
+    group('Lines & tubes',[lines.length?rowsFor(lines,'Device'):'<div class="pl-item21">No active lines or tubes recorded</div>']),
+    group('Infusions & services',[therapies.length?rowsFor(therapies,'Infusion'):'',item('IV access / fluids',p.iv),item('Infusion notes',p.infusions),services.length?rowsFor(services,'Service'):'']),
+    group('Daily care',[item('Voiding',p.void),item('Urine output',p.urineOutput),item('Feeding / diet',[p.feeding,p.diet].filter(Boolean).join(' · ')),item('Skin / pressure injury',[p.pi,p.piStage,p.wounds].filter(Boolean).join(' · ')),item('Precautions',p.precautions)]),
+    group('Investigations & follow-up',[item('Labs',p.labs),item('Cultures / swabs',[p.swab,p.culture].filter(Boolean).join(' · ')),item('Critical values',p.panic),item('Pending tasks',pending?pending+' pending':''),item('Endorsement',p.endorsement)]),
+    group('Care team',[item('ICU physician',p.icuPhysician),item('Primary physician',p.primaryPhysician)])
+   ].filter(Boolean).join('');
+   const support=p.oxygen||'Respiratory support not documented';
+   return '<article class="card"><div class="toprow"><div><div class="label">'+safe(p.bed)+' · MRN '+safe(p.mrn||'—')+'</div><h3>'+safe(p.name)+'</h3></div>'+pill(p.code||'Not documented',p.code==='DNR'?'red':'')+'</div><p class="diagnosis">'+safe(p.diagnosis||'Diagnosis not documented')+'</p><div>'+pill(support,'blue')+(p.precautions&&p.precautions!=='Standard'?pill(p.precautions,'amber'):'')+(lines.length?pill(lines.length+' active line'+(lines.length===1?'':'s')):'')+(pending?pill(pending+' pending task'+(pending===1?'':'s'),'amber'):'')+'</div><p class="meta">Age '+safe(p.age||'—')+' · '+safe(p.gender||'—')+' · Admission '+safe(admission)+' · LOS '+safe(losDays3(p.doa))+'</p><details class="pl-details21"><summary>Clinical details</summary><div class="pl-grid21">'+info+'</div></details><button class="btn secondary" data-open="'+safe(p.bed)+'">View patient</button>'+(canEdit()?'<details class="section"><summary>Transfer bed</summary><select data-destination21="'+safe(p.bed)+'"><option value="">Choose available bed</option>'+groups.flatMap(g=>g.ids).filter(bed=>bed!==p.bed&&!active().some(x=>x.bed===bed)).map(bed=>'<option>'+safe(bed)+'</option>').join('')+'</select><input data-transfer-by21="'+safe(p.bed)+'" placeholder="Staff / initials"><button class="btn secondary" data-transfer21="'+safe(p.bed)+'">Transfer</button></details>':'')+'</article>';
+  }).join('')||'<section class="section">No matching patients. Select an available bed in Census to admit a patient.</section>';
   document.querySelectorAll('[data-open]').forEach(button=>button.onclick=()=>open(active().find(p=>p.bed===button.dataset.open)));
-
-  document.querySelectorAll('[data-transfer21]').forEach(button=>button.onclick=()=>{try{const p=active().find(p=>p.bed===button.dataset.transfer21);transferPatient11(p,main.querySelector(`[data-destination21="${p.bed}"]`).value,main.querySelector(`[data-transfer-by21="${p.bed}"]`).value);paint()}catch(error){status(error.message)}});
-
+  document.querySelectorAll('[data-transfer21]').forEach(button=>button.onclick=()=>{try{const p=active().find(x=>x.bed===button.dataset.transfer21);transferPatient11(p,main.querySelector('[data-destination21="'+p.bed+'"]').value,main.querySelector('[data-transfer-by21="'+p.bed+'"]').value);paint()}catch(error){status(error.message)}});
  };
-
  let timer;document.getElementById('search21').oninput=()=>{clearTimeout(timer);timer=setTimeout(paint,150)};paint();
-
 };
 
 const baseStatus21=status;status=function(message){baseStatus21(message);const local=document.getElementById('patient-save-status21');if(local)local.textContent=message};
