@@ -129,7 +129,7 @@ function installToolbar(){document.querySelectorAll('.production-toolbar').forEa
 
 // Real patient data stay in memory; this runtime never saves them to localStorage.
 
-document.addEventListener('click',e=>{if(!session)return;if(canCare39()&&e.target.closest('.nursing-care39'))return;const button=e.target.closest('#save,#save-unified8,#archive-discharge3');if(button&&selected&&(!selected.name?.trim()||!selected.mrn?.trim())){e.preventDefault();e.stopImmediatePropagation();alert('Patient name and MRN are required.')}if(!canEdit()&&e.target.closest('button,input,select,textarea')&&!e.target.closest('.top,.tabs,.production-toolbar,.production-gate')&&!e.target.closest('.tab')&&!e.target.closest('[data-open],.bed,#close,.switch,#open-unified8,#patient-kardex6,#unified-kardex8,.quick-nav21,#tv-launch40,#tv-exit40,#tv-duties40,#k-print,#k-patient,#k-start,#k-paper36,#search21,#ward-shift24,#tools-shift24,#back-profile8,[data-workflow-open8],[data-record18],#record-search3,#records-prev18,#records-next18,#search11,[data-result-open11],[data-sched-view3],[data-shift3],[data-cal-open],[data-cal-move],[data-cal-day]')&&page!=='labels'){e.preventDefault();e.stopImmediatePropagation();status('This account has read-only access.')}},true);
+document.addEventListener('click',e=>{if(!session)return;if(canCare39()&&e.target.closest('.nursing-care39'))return;const button=e.target.closest('#save,#save-unified8,#archive-discharge3');if(button&&selected&&(!selected.name?.trim()||!selected.mrn?.trim())){e.preventDefault();e.stopImmediatePropagation();alert('Patient name and MRN are required.')}if(!canEdit()&&e.target.closest('button,input,select,textarea')&&!e.target.closest('.top,.tabs,.production-toolbar,.production-gate')&&!e.target.closest('.tab')&&!e.target.closest('[data-open],.bed,#close,.switch,#open-unified8,#patient-kardex6,#unified-kardex8,.quick-nav21,#tv-launch40,#tv-exit40,#tv-duties40,#k-print,#k-patient,#k-start,#k-paper36,#search21,#ward-shift24,#tools-shift24,#back-profile8,[data-workflow-open8],[data-record18],#record-search3,#record-admit-from3,#record-admit-to3,#record-discharge-from3,#record-discharge-to3,#records-prev18,#records-next18,#assignment-search3,#search11,[data-result-open11],[data-sched-view3],[data-shift3],[data-cal-open],[data-cal-move],[data-cal-day]')&&page!=='labels'){e.preventDefault();e.stopImmediatePropagation();status('This account has read-only access.')}},true);
 
 window.addEventListener('beforeunload',e=>{if(session&&(formDraft24||dirty20())){e.preventDefault();e.returnValue=''}});
 
@@ -146,71 +146,42 @@ const cloudRenderBefore=render;render=function(){if(page!=='records'){recordsAbo
 let recordsRequest18=0,recordsAbort30=null;
 
 medicalRecords3=function(){
-
  recordsAbort30?.abort();const request=++recordsRequest18;
-
- main.innerHTML='<h2 class="title">Medical records</h2><p class="sub">Database archive · 50 records per page</p><input class="search" id="record-search3" placeholder="Search name, MRN, bed or diagnosis"><div id="record-status18" role="status"></div><div id="records-list3"></div><button class="btn secondary" id="records-prev18" disabled>Previous</button> <button class="btn secondary" id="records-next18" disabled>Next</button>';
-
+ main.innerHTML='<h2 class="title">Medical records</h2><p class="sub">Database archive · Dates in Taif time (Asia/Riyadh, UTC+3)</p><input class="search" id="record-search3" placeholder="Search name, MRN, bed or diagnosis"><section class="section"><div class="secthead"><h3>Date filters</h3><small>Taif time · UTC+3</small></div><div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px"><div class="field"><label>Admission from</label><input id="record-admit-from3" type="date"></div><div class="field"><label>Admission to</label><input id="record-admit-to3" type="date"></div><div class="field"><label>Discharge from</label><input id="record-discharge-from3" type="date"></div><div class="field"><label>Discharge to</label><input id="record-discharge-to3" type="date"></div></div></section><div id="record-status18" role="status"></div><div id="records-list3"></div><button class="btn secondary" id="records-prev18" disabled>Previous</button> <button class="btn secondary" id="records-next18" disabled>Next</button>';
  let cursor=null,history=[],rows=[],nextCursor=null,timer,version=0;
-
  const load=async()=>{
-
   if(page!=='records'||request!==recordsRequest18||!document.getElementById('record-search3'))return;
-
   recordsAbort30?.abort();recordsAbort30=new AbortController();const activeAbort=recordsAbort30,timeout=setTimeout(()=>activeAbort.abort(new DOMException('Records request timed out. Retry search.','TimeoutError')),12000);const current=++version;
-
   document.getElementById('records-prev18').disabled=true;document.getElementById('records-next18').disabled=true;
-
-  const query=document.getElementById('record-search3').value.trim();
-
-  const statusEl=document.getElementById('record-status18');statusEl.textContent='Loading records…';
-
-  const params=new URLSearchParams({unit_id:'eq.'+config.unitId,select:'data,archived_at,admission_key',order:'archived_at.desc,admission_key.desc',limit:'51'});
-
-  const conditions=[];
-
+  const query=document.getElementById('record-search3').value.trim(),statusEl=document.getElementById('record-status18');statusEl.textContent='Loading records…';
+  const params=new URLSearchParams({unit_id:'eq.'+config.unitId,select:'data,archived_at,admission_key',order:'archived_at.desc,admission_key.desc',limit:'51'}),conditions=[];
   if(query)params.set('search_document','wfts(simple).'+query);
-
+  const admissionFrom=document.getElementById('record-admit-from3').value,admissionTo=document.getElementById('record-admit-to3').value,dischargeFrom=document.getElementById('record-discharge-from3').value,dischargeTo=document.getElementById('record-discharge-to3').value;
+  if(admissionFrom)conditions.push('admission_date.gte.'+admissionFrom);
+  if(admissionTo)conditions.push('admission_date.lte.'+admissionTo);
+  if(dischargeFrom)conditions.push('data->>dischargedAt.gte.'+dischargeFrom);
+  if(dischargeTo)conditions.push('data->>dischargedAt.lte.'+dischargeTo);
   if(cursor)conditions.push('or(archived_at.lt.'+cursor.at+',and(archived_at.eq.'+cursor.at+',admission_key.lt."'+cursor.key.replace(/["\\]/g,'')+'"))');
-
   if(conditions.length)params.set('and','('+conditions.join(',')+')');
-
   try{
-
-   const result=await rest('kaash_records?'+params,{signal:recordsAbort30.signal});
-
+   const result=await rest('kaash_records?'+params,{signal:activeAbort.signal});
    if(request!==recordsRequest18||current!==version||page!=='records')return;
-
    rows=result.slice(0,50);const last=rows.at(-1);nextCursor=result.length>50?{at:last.archived_at,key:last.admission_key}:null;
-
    document.getElementById('records-list3').innerHTML=rows.map(({data:p},i)=>`<article class="card"><div class="label">${safe(p.bed)} · ${safe(p.status||'Discharged')}</div><h3>${safe(p.name)}</h3><span class="meta">Patient status: ${safe(p.patientStatus||'Not documented')}</span><p class="meta">MRN ${safe(p.mrn)} · Admitted ${safe(p.doa||'—')} · Discharged ${safe(p.dischargedAt||'—')}</p>${destinationLabel34(p)?`<p class="destination-preview34">Discharged to: ${safe(destinationLabel34(p))}</p>`:''}<p>${safe(p.diagnosis||'')}</p><button class="btn secondary" data-record18="${i}">Open record</button></article>`).join('')||'<p>No matching records.</p>';
-
    document.querySelectorAll('[data-record18]').forEach(button=>button.onclick=()=>{
-
     open(clone(rows[+button.dataset.record18].data));
-
     const fields=document.getElementById('patient-fields');if(fields){fields.querySelectorAll('input,select,textarea,button').forEach(el=>el.disabled=true);fields.insertAdjacentHTML('afterbegin','<p class="sub">Archived record · read only</p>');}
-
    });
-
    statusEl.textContent='Page '+(history.length+1)+' · '+rows.length+' records';
-
-   document.getElementById('records-prev18').disabled=!history.length;
-
-   document.getElementById('records-next18').disabled=!nextCursor;
-
+   document.getElementById('records-prev18').disabled=!history.length;document.getElementById('records-next18').disabled=!nextCursor;
   }catch(error){if(current===version&&request===recordsRequest18&&page==='records')statusEl.textContent=error.message+' Retry the search; install the archive database update if missing.';}finally{clearTimeout(timeout);}
-
  };
-
- document.getElementById('record-search3').oninput=()=>{clearTimeout(timer);recordsAbort30?.abort();++version;cursor=null;history=[];timer=setTimeout(load,300)};
-
+ const resetAndLoad=()=>{clearTimeout(timer);recordsAbort30?.abort();++version;cursor=null;history=[];timer=setTimeout(load,300)};
+ document.getElementById('record-search3').oninput=resetAndLoad;
+ ['record-admit-from3','record-admit-to3','record-discharge-from3','record-discharge-to3'].forEach(id=>document.getElementById(id).onchange=resetAndLoad);
  document.getElementById('records-next18').onclick=()=>{if(!nextCursor)return;history.push(cursor);cursor=nextCursor;void load()};
-
  document.getElementById('records-prev18').onclick=()=>{if(!history.length)return;cursor=history.pop();void load()};
-
  void load();
-
 };
 
 
