@@ -1160,3 +1160,63 @@ void initializeSession20();;
 
 
 
+
+
+// Charge workflow: show board freshness and one complete follow-up queue.
+let lastBoardReadAt50=null;
+const installBoardBefore50=installBoard;
+installBoard=function(data){installBoardBefore50(data);lastBoardReadAt50=new Date().toISOString()};
+
+function chargeFollowUpItems50(shift){
+ const assigned=assignments24(shift).rn,now=Date.now(),items=[];
+ active().forEach(patient=>(patient.tasks||[]).filter(task=>task.status!=='Completed').forEach(task=>{
+  const due=instant24(task.due),overdue=due!==null&&due<now;
+  items.push({patient,task,overdue,unowned:!String(task.owner||'').trim(),dueTime:due});
+ }));
+ return items.sort((a,b)=>Number(b.overdue)-Number(a.overdue)||(a.dueTime??Infinity)-(b.dueTime??Infinity)||a.patient.bed.localeCompare(b.patient.bed));
+}
+
+function chargeFollowUpMarkup50(items){
+ const rows=items.map(({patient,task,overdue,unowned})=>`<article class="card followup-row50" data-followup-item50 data-overdue50="${overdue}" data-unowned50="${unowned}" data-search50="${safe([patient.bed,patient.name,patient.mrn,task.title,task.owner].join(' ').toLowerCase())}">
+  <div class="toprow"><div><div class="label">${safe(patient.bed)} · MRN ${safe(patient.mrn)}</div><h3>${safe(task.title||'Untitled follow-up')}</h3></div>${overdue?pill('Overdue','amber'):''}</div>
+  <p class="meta">Owner: ${safe(task.owner||'Not assigned')} · Due: ${safe(task.due||'Not recorded')}</p>
+  <button type="button" class="btn secondary quick-nav21" data-followup-open50="${safe(patient.admissionId)}">Open patient</button>
+ </article>`).join('');
+ return `<details class="section charge-followups50" open><summary>Follow-up queue · ${items.length} open items</summary>
+  <p class="sub">Open tasks recorded for active patients. Overdue is shown only when a due time is documented. This list does not add clinical guidance.</p>
+  <div class="label-tools"><input id="followup-search50" class="search" type="search" placeholder="Search task, patient, bed, MRN or owner" aria-label="Search follow-up items"><select id="followup-filter50" aria-label="Filter follow-up items"><option value="all">All open items</option><option value="overdue">Overdue</option><option value="unowned">No owner recorded</option></select></div>
+  <div id="followup-list50">${rows||'<p class="sub">No open tasks are recorded for active patients.</p>'}</div><p id="followup-empty50" class="sub" hidden>No matching follow-ups.</p></details>`;
+}
+
+const wardBoardBefore50=wardBoard24;
+wardBoard24=function(){
+ wardBoardBefore50();
+ const items=chargeFollowUpItems50(wardShift24),activePatients=active(),unassigned=workload24(wardShift24).unassigned;
+ const awaiting=activePatients.filter(patient=>{const h=latestHandover24(patient,wardShift24);return h&&!h.receivedAt}).length;
+ const snapshot=document.createElement('section');
+ snapshot.className='section charge-snapshot50';
+ snapshot.innerHTML=`<div class="secthead"><h3>Charge start-of-shift snapshot</h3><small>${offline38?'Offline snapshot':lastBoardReadAt50?'Board loaded '+new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Riyadh',hour:'2-digit',minute:'2-digit',day:'2-digit',month:'short'}).format(new Date(lastBoardReadAt50))+' · Taif time':'Board load time unavailable'}</small></div>
+ <div class="stats">${metric('Occupied beds',activePatients.length)}${metric('Open follow-ups',items.length)}${metric('Beds without RN',unassigned.length)}${metric('Handover awaiting receipt',awaiting)}</div>
+ <p class="sub">Counts reflect the selected shift’s recorded assignments and active patient board. They are a workflow overview, not a staffing or clinical safety assessment.</p>`;
+ const toolbar=main.querySelector('.label-tools');
+ if(toolbar)toolbar.insertAdjacentElement('afterend',snapshot);else main.prepend(snapshot);
+ const patientList=main.querySelector('#ward-patients24');
+ if(patientList)patientList.insertAdjacentHTML('beforebegin',chargeFollowUpMarkup50(items));
+ const applyFilter=()=>{
+  const query=(main.querySelector('#followup-search50')?.value||'').trim().toLowerCase(),filter=main.querySelector('#followup-filter50')?.value||'all';
+  let shown=0;
+  main.querySelectorAll('[data-followup-item50]').forEach(card=>{
+   const matchesQuery=!query||card.dataset.search50.includes(query);
+   const matchesFilter=filter==='all'||(filter==='overdue'&&card.dataset.overdue50==='true')||(filter==='unowned'&&card.dataset.unowned50==='true');
+   card.hidden=!(matchesQuery&&matchesFilter);if(!card.hidden)shown++;
+  });
+  const empty=main.querySelector('#followup-empty50');if(empty)empty.hidden=shown!==0;
+ };
+ main.querySelector('#followup-search50')?.addEventListener('input',applyFilter);
+ main.querySelector('#followup-filter50')?.addEventListener('change',applyFilter);
+ main.querySelectorAll('[data-followup-open50]').forEach(button=>button.addEventListener('click',()=>open(active().find(patient=>patient.admissionId===button.dataset.followupOpen50))));
+};
+
+const chargeWorkflowStyle50=document.createElement('style');
+chargeWorkflowStyle50.textContent='.charge-snapshot50 .stats{grid-template-columns:repeat(4,minmax(0,1fr))}.charge-followups50>summary{cursor:pointer;font-weight:800;margin:2px 0 10px}.charge-followups50 .label-tools{display:grid;grid-template-columns:minmax(0,2fr) minmax(145px,1fr);gap:8px}.charge-followups50 .search{margin:0}.followup-row50[hidden]{display:none!important}@media(max-width:500px){.charge-snapshot50 .stats{grid-template-columns:repeat(2,minmax(0,1fr))}}';
+document.head.append(chargeWorkflowStyle50);

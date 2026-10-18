@@ -70,4 +70,10 @@
  #discharge-form24>label{display:block;margin:12px 0;font-weight:600}#discharge-form24>label :is(input,select){display:block;width:100%;margin-top:6px}
  @media(max-width:560px){body{padding:0}.app{border-radius:0!important;min-height:100vh}.top{padding:18px!important;flex-wrap:wrap;gap:10px}.brand b{font-size:21px}.production-toolbar{display:flex;flex-wrap:wrap;gap:8px;padding:10px}.production-toolbar button{flex:1;min-width:110px}.modal{padding:16px!important;max-height:94vh!important}.shade{padding:8px!important}.admission-form34 .fields{grid-template-columns:minmax(0,1fr)}.admission-form34 :is(fieldset,.admission-care34,.admission-optional26){padding:12px}.admission-form34 .field.wide{grid-column:auto}.admission-actions34 .btn{min-width:100px}}
  @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+ /* Patient list clinical-detail cards follow the active theme. */
+ html[data-theme=dark] .pl-group21{background:var(--surface-alt34);color:var(--text34)}
+ html[data-theme=dark] .pl-item21{border-color:var(--line)}
+ html[data-theme=dark] .pl-item21 b{color:var(--muted34)}
+ html[data-theme=dark] .pl-details21>summary{color:var(--accent34)}
 }
