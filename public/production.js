@@ -306,7 +306,7 @@ async function enterApp20(){
 
 function loginForm(message=''){
 
- document.getElementById('login-content').innerHTML=`<p role="status">${safe(message)}</p><form id="login-form"><label>Employee number or email<input type="text" name="email" autocomplete="username" required></label><label>Password<input type="password" name="password" autocomplete="current-password" required></label><button type="submit">Sign in · 1 hour</button></form>`;
+ document.getElementById('login-content').innerHTML=`<p role="status">${safe(message)}</p><form id="login-form"><label>Username, employee number or email<input type="text" name="email" autocomplete="username" placeholder="charge" required></label><label>Password<input type="password" name="password" autocomplete="current-password" required></label><button type="submit">Sign in · 1 hour</button></form>`;
 
  document.getElementById('login-form').onsubmit=async e=>{
 
