@@ -368,4 +368,61 @@ const brandLogo17=document.createElement('img');brandLogo17.className='cluster-l
   if(target)target.before(block);else main.append(block);
  };
 })();
+</script><style>
+/* Schedule: readable, single-column mobile layout with clear shift handover. */
+.schedule-active4 .staff-assignment-layout{display:flex!important;flex-direction:column;gap:12px}
+.schedule-active4 .bed-board-section3,.schedule-active4 .duty-board-section3,.schedule-active4 .kaash-workload-summary{width:100%;min-width:0}
+.schedule-active4 .bed-assignment-card3{height:auto!important;min-height:78px;padding:9px}
+.schedule-active4 .all-bed-grid3{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.schedule-active4 .bed-staff-line3 small,.schedule-active4 .bed-staff-line3 b{font-size:11px!important;line-height:1.4}
+.schedule-active4 .staff-legend3,.schedule-active4 .schedule-legend{font-size:11px}
+.schedule-active4 .duty-grid3{grid-template-columns:repeat(2,minmax(0,1fr))}
+.kaash-next-roster{border:1px solid #d5e2f2;border-radius:14px;background:var(--bg);padding:14px;margin:12px 0}
+.kaash-next-roster h3{margin:0 0 6px;font-size:17px}
+.kaash-next-roster p{font-size:12px;line-height:1.5}
+.kaash-next-roster textarea{width:100%;min-height:110px;border:1px solid #b9cde5;border-radius:10px;padding:12px;font-size:14px;resize:vertical;background:var(--bg);color:var(--ink)}
+.kaash-next-roster .roster-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:9px}
+.kaash-next-roster button{padding:10px 14px;border:0;border-radius:9px;background:#2869dc;color:#fff;font-weight:700}
+.kaash-next-roster .roster-status{font-size:12px}
+@media(min-width:700px){.schedule-active4 .all-bed-grid3{grid-template-columns:repeat(4,minmax(0,1fr))}}
+</style><script>
+(function(){
+ // Store planned incoming staff with the date-scoped staffing snapshot,
+ // so the existing Supabase board persistence includes this information.
+ let nextRosters=JSON.parse(JSON.stringify(scheduleByDate4[scheduleDate3]?.nextRosters||{}));
+ const originalSnapshot=staffingSnapshot4;
+ staffingSnapshot4=function(){return {...originalSnapshot(),nextRosters:JSON.parse(JSON.stringify(nextRosters))}};
+ const originalRestore=restoreStaffing4;
+ restoreStaffing4=function(v){originalRestore(v);nextRosters=JSON.parse(JSON.stringify(v?.nextRosters||{}))};
+ const previousTeam=team;
+ team=function(){
+  previousTeam();
+  const nextShift=currentShift3==='Day'?'Evening':currentShift3==='Evening'?'Night':'Day';
+  const nextDate=new Date(scheduleDate3+'T12:00:00Z');
+  if(currentShift3==='Night')nextDate.setUTCDate(nextDate.getUTCDate()+1);
+  const targetDate=nextDate.toISOString().slice(0,10);
+  const key=targetDate+'|'+nextShift;
+  const section=document.createElement('section');
+  section.className='kaash-next-roster';
+  section.innerHTML='<h3>Incoming shift · RN & PCT roster</h3>'+
+   '<p>Prepare the names of nurses and PCTs for <strong>'+safe(nextShift)+'</strong> · '+safe(targetDate)+'. The next charge nurse can review the roster and assign beds. Planning does not assign patients automatically.</p>'+
+   '<label for="kaash-roster-rn">Incoming registered nurses (one name per line)</label>'+
+   '<textarea id="kaash-roster-rn" maxlength="4000" placeholder="RN name on each line"></textarea>'+
+   '<label for="kaash-roster-pct">Incoming PCTs (one name per line)</label>'+
+   '<textarea id="kaash-roster-pct" maxlength="2000" placeholder="PCT name on each line"></textarea>'+
+   '<div class="roster-actions"><button type="button" id="kaash-save-roster">Save incoming roster</button><span class="roster-status" role="status"></span></div>';
+  const record=nextRosters[key]||{};
+  section.querySelector('#kaash-roster-rn').value=record.rn||'';
+  section.querySelector('#kaash-roster-pct').value=record.pct||'';
+  section.querySelector('#kaash-save-roster').onclick=()=>{
+   const rn=section.querySelector('#kaash-roster-rn').value.trim();
+   const pct=section.querySelector('#kaash-roster-pct').value.trim();
+   nextRosters[key]={rn,pct,updatedAt:new Date().toISOString()};
+   savePreview3();
+   section.querySelector('.roster-status').textContent='Changes queued. Verify cloud save status before handover.';
+  };
+  const target=main.querySelector('.staff-assignment-layout')||main.querySelector('.bed-board-section3');
+  if(target)target.before(section);else main.prepend(section);
+ };
+})();
 </script><script src="/smart-admission.js"></script></body></html>
