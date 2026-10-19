@@ -276,4 +276,21 @@ team=function(){
  duties.querySelector('#other-duty17').onchange=e=>{shiftDuties3[currentShift3]||={};shiftDuties3[currentShift3]['Other description']=e.target.value;savePreview3()};
 };
 const brandLogo17=document.createElement('img');brandLogo17.className='cluster-logo';brandLogo17.src='/taif-logo.jpg';brandLogo17.alt='Taif Health Cluster';document.querySelector('.brand .mark')?.replaceWith(brandLogo17);
+</script><script>
+/* Live local shift date: prevents stale hard-coded header dates. */
+(function(){
+  function refreshShiftDate(){
+    const badge=document.querySelector('.top .shift');
+    if(!badge)return;
+    const now=new Date();
+    const hour=now.getHours();
+    const shift=hour>=7&&hour<15?'MORNING':hour>=15&&hour<23?'EVENING':'NIGHT';
+    const date=new Intl.DateTimeFormat('en-GB',{day:'2-digit',month:'short',year:'numeric'}).format(now).toUpperCase();
+    badge.textContent=shift+' SHIFT · '+date;
+    badge.title='Local device time';
+  }
+  refreshShiftDate();
+  setInterval(refreshShiftDate,60000);
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshShiftDate()});
+})();
 </script><script src="/smart-admission.js"></script></body></html>
