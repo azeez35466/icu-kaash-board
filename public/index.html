@@ -250,6 +250,26 @@ function paintCalendar15(){const year=calendarView15.getUTCFullYear(),month=cale
 function openCalendar15(target){calendarTarget15=target;calendarDate15=target.value.slice(0,10);calendarTime15=target.value.slice(11,16)||'07:00';const date=calendarDate15||new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Riyadh',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());calendarView15=new Date(date.slice(0,7)+'-01T00:00:00Z');paintCalendar15();englishCalendar15.classList.add('show');$('#calendar-close15').focus()}
 document.addEventListener('click',e=>{const target=e.target.closest('input[data-date-type],input[type="date"],input[type="datetime-local"]');if(target&&!englishCalendar15.contains(target)){e.preventDefault();openCalendar15(target)}},true);document.addEventListener('keydown',e=>{if(e.key==='Escape'&&englishCalendar15.classList.contains('show')){e.preventDefault();closeCalendar15()}else if(['Enter',' '].includes(e.key)&&e.target.matches('input[data-date-type],input[type="date"],input[type="datetime-local"]')){e.preventDefault();openCalendar15(e.target)}});$('#calendar-close15').onclick=closeCalendar15;englishCalendar15.onclick=e=>{if(e.target===englishCalendar15)closeCalendar15()};
 
+</script><script>
+/* Startup safety: never leave the authenticated shell invisible if its module fails. */
+(function(){
+ let moduleFailed=false;
+ function showStartupIssue(){
+   if(document.querySelector('.production-gate'))return;
+   if(document.getElementById('kaash-startup-error'))return;
+   const panel=document.createElement('main');
+   panel.id='kaash-startup-error';
+   panel.setAttribute('role','alert');
+   panel.style.cssText='max-width:480px;margin:9vh auto;padding:26px;border-radius:18px;background:#fff;color:#17324b;font:16px/1.5 system-ui;box-shadow:0 12px 45px #0002';
+   const heading=document.createElement('h1');heading.textContent='ICU KAASH';
+   const msg=document.createElement('p');msg.textContent='The secure application could not finish loading. No patient information is shown. Please refresh or contact the administrator.';
+   const retry=document.createElement('button');retry.type='button';retry.textContent='Retry loading';retry.style.cssText='padding:12px 20px;background:#2869dc;color:#fff;border:0;border-radius:10px;font:inherit';retry.onclick=()=>location.reload();
+   panel.append(heading,msg,retry);document.body.append(panel);
+ }
+ window.addEventListener('error',function(e){if(e.target instanceof HTMLScriptElement && /production\.js|smart-admission\.js/.test(e.target.src||'')){moduleFailed=true;setTimeout(showStartupIssue,100)}},true);
+ window.addEventListener('unhandledrejection',function(){if(!document.querySelector('.production-gate'))setTimeout(showStartupIssue,100)});
+ setTimeout(function(){if(!document.querySelector('.production-gate'))showStartupIssue()},3500);
+})();
 </script><script type="module" src="/production.js"></script><script>
 // Use the English calendar instead of browser date fields localized by the OS.
 function prepareEnglishDates16(){
