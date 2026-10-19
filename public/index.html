@@ -310,4 +310,34 @@ const brandLogo17=document.createElement('img');brandLogo17.className='cluster-l
   setInterval(refreshShiftDate,60000);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshShiftDate()});
 })();
+</script><script>
+/* Assignment staff quick search, retaining the existing three-shift save handlers. */
+(function(){
+ const previousTeam=team;
+ team=function(){
+  previousTeam();
+  const selects=[...main.querySelectorAll('select[data-rn],select[data-pct],select[data-duty17]')];
+  selects.forEach(select=>{
+   if(select.previousElementSibling?.classList?.contains('kaash-staff-search'))return;
+   const search=document.createElement('input');
+   search.className='kaash-staff-search';
+   search.type='search';
+   search.autocomplete='off';
+   search.placeholder='Find '+(select.hasAttribute('data-pct')?'PCT':'staff')+'…';
+   search.setAttribute('aria-label','Search assignment staff');
+   search.style.cssText='display:block;width:100%;box-sizing:border-box;margin:5px 0;padding:7px 9px;border:1px solid #cbd5e1;border-radius:8px;font-size:12px;background:var(--card,#fff);color:inherit';
+   const all=[...select.options].map(o=>({value:o.value,label:o.textContent}));
+   search.addEventListener('input',()=>{
+    const query=search.value.trim().toLocaleLowerCase();
+    const keep=select.value;
+    select.replaceChildren();
+    all.filter(o=>!query||o.label.toLocaleLowerCase().includes(query)||o.value===keep).forEach(o=>{
+     const opt=new Option(o.label,o.value);select.add(opt);
+    });
+    select.value=keep;
+   });
+   select.before(search);
+  });
+ };
+})();
 </script><script src="/smart-admission.js"></script></body></html>
