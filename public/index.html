@@ -340,4 +340,32 @@ const brandLogo17=document.createElement('img');brandLogo17.className='cluster-l
   });
  };
 })();
+</script><script>
+/* Informational RN workload snapshot. No automatic clinical assignments. */
+(function(){
+ const priorTeam=team;
+ team=function(){
+  priorTeam();
+  const beds=active();
+  const assignments=shiftRNs[currentShift3]||{};
+  const levels=shiftAcuity[currentShift3]||{};
+  const stats=new Map(staff.map(name=>[name,{beds:0,points:0,high:0}]));
+  beds.forEach(p=>{
+   const rn=assignments[p.bed];
+   if(!stats.has(rn))return;
+   const score=Number(levels[p.bed]);
+   const n=Number.isInteger(score)&&score>=1&&score<=5?score:0;
+   const entry=stats.get(rn);entry.beds++;entry.points+=n;if(n>=4)entry.high++;
+  });
+  const block=document.createElement('section');
+  block.className='section kaash-workload-summary';
+  block.innerHTML='<div class="secthead"><h3>RN workload overview</h3><small>'+safe(currentShift3)+' · indicative only</small></div>'+
+   '<p class="sub">Based on manually recorded acuity (1–5). Missing acuity scores count as 0; review staffing clinically before assigning.</p>'+
+   '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px">'+
+   [...stats].map(([name,x])=>'<div class="card" style="padding:10px;margin:0"><b>'+safe(name)+'</b><div class="meta">'+x.beds+' patients · '+x.points+' acuity points</div><div class="meta">'+x.high+' high-acuity (4–5)</div></div>').join('')+
+   '</div><p class="sub">Unassigned occupied beds: '+beds.filter(p=>!assignments[p.bed]).length+' · Acuity not documented: '+beds.filter(p=>!Number(levels[p.bed])).length+'</p>';
+  const target=main.querySelector('.bed-board-section3')||main.querySelector('.assignment')||main.querySelector('.staff-assignment-layout');
+  if(target)target.before(block);else main.append(block);
+ };
+})();
 </script><script src="/smart-admission.js"></script></body></html>
